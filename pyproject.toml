@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tstodlc"
+version = "0.0.1"
+authors = [
+  { name="al1sant0s", email="cnctalissonsantos@gmail.com" },
+]
+description = "Produce and install dlcs for the game 'The Simpsons: Tapped Out'."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["colorama"]
+
+[project.scripts]
+tstodlc = "tstodlc.tools.pack:main"
+
+[project.urls]
+Homepage = "https://github.com/al1sant0s/tstodlc"
+Issues = "https://github.com/al1sant0s/tstodlc/issues"
