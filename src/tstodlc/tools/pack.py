@@ -1,6 +1,7 @@
 import argparse
 import zlib
 import tempfile
+import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -12,6 +13,7 @@ from tstodlc.tools.index import (
     UpdateServerIndex,
 )
 from tstodlc.tools.progress import report_progress
+
 
 # Warning: this script requires ImageMagick to work. If you do not have installed in your system,
 # you will have to install it first before using the script.
@@ -50,25 +52,39 @@ def main():
     )
 
     parser.add_argument(
-        "--platform", help="Specify platform for Package entry.", default="all"
+        "--platform",
+        help="Specify platform for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
+        default="all",
     )
 
     parser.add_argument(
-        "--version", help="Specify version for Package entry.", default="4.69.0"
-    )
-
-    parser.add_argument("--tier", help="Specify tier for Package entry.", default="all")
-
-    parser.add_argument(
-        "--language", help="Specify language for Package entry.", default="all"
+        "--version",
+        help="Specify version for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
+        default="4.69.0",
     )
 
     parser.add_argument(
-        "--initial", help="Specify initial packages.", action="store_true"
+        "--tier",
+        help="Specify tier for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
+        default="all",
     )
 
     parser.add_argument(
-        "--tutorial", help="Specify tutorial packages.", action="store_true"
+        "--language",
+        help="Specify language for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
+        default="all",
+    )
+
+    parser.add_argument(
+        "--initial",
+        help="Specify the packages should be installed along with initial packages.",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "--tutorial",
+        help="Specify the packages should be installed along with tutorial packages.",
+        action="store_true",
     )
 
     parser.add_argument(
@@ -85,14 +101,20 @@ def main():
 
     parser.add_argument(
         "--index_only",
-        help="Update DLCIndex only without patching the files again.",
+        help="Update DLCIndex_XXXX.xml and server DLCIndex_XXXX.xml only without patching the files again.",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "--unzip",
+        help="Do not zip the subfolders when installing the dlc. Useful for editing files from the apk.",
         action="store_true",
     )
 
     parser.add_argument(
         "--clean",
         help="""
-        Remove non existing packages from server dlc directory and update server DLCIndex.
+        Remove non existing packages from server DLCIndex_XXXX.xml.
         When --clean is requested, normal operations (packing dlcs and such) will not happen.
 
         Sugestion of usage:
@@ -170,7 +192,7 @@ def main():
             print(Style.RESET_ALL)
 
             # Start of DLCIndex file.
-            dlc_index_file = Path(subtarget_dir, f"DLCIndex_{subtarget_dir.name}.xml")
+            dlc_index_file = Path(directory, f"DLCIndex_{subtarget_dir.name}.xml")
 
             tree = GetIndexTree(dlc_index_file, "DlcIndex")
             root = tree.getroot()
@@ -189,7 +211,11 @@ def main():
                 root_list.append(ET.SubElement(root, "TutorialPackages"))
 
             if args.index_only is False:
-                for subdirectory in directory.iterdir():
+                for subdirectory in (
+                    subdirectory
+                    for subdirectory in directory.iterdir()
+                    if subdirectory.is_dir() is True
+                ):
                     with tempfile.TemporaryDirectory() as tempdir:
                         # Main files.
                         file_0 = Path(tempdir, "0")
@@ -210,21 +236,34 @@ def main():
                             f0.write(b"\x42\x47\x72\x6d\x03\x02")
 
                             # Reserve 4 bytes for 0 file size.
+                            # Fill it up later.
                             f0.write(b"\x00\x00\x00\x00")
 
-                            # Unknown.
-                            f0.write(b"\x00\x77\x00")
+                            # Biggest amount of allocated bytes.
+                            f0.write(b"\x00")
+
+                            longest_filename = sorted(
+                                [file.name for file in files], key=len, reverse=True
+                            )[0]
+                            longest_length = (
+                                len(longest_filename) * 2
+                                + len(Path(longest_filename).suffix[1:])
+                                + 14
+                            )
+                            f0.write(longest_length.to_bytes())
+
+                            f0.write(b"\x00")
 
                             # Full filepath.
                             write_str_to_file(f0, str(subdirectory) + "/1")
 
-                            # Unknown.
+                            # Unknown but doesn't seem to change between files.
                             f0.write(b"\x00\x01\x00\x08")
 
                             # 1 filename.
                             write_str_to_file(f0, file_1.stem)
 
-                            # Unknown.
+                            # Unknown but doesn't seem to change between files.
                             f0.write(b"\x01")
 
                             # File 1 crc32.
@@ -250,13 +289,13 @@ def main():
                                 file_size = file.stat().st_size
                                 f0.write(file_size.to_bytes(length=4))
 
-                                # Precedence value, version control number or build number.
-                                # If two files have the same names, the file with the bigger value associated
+                                # Priority value or build number value.
+                                # If two files define the same filenames, the file with the bigger value associated
                                 # with it within 0 file will take precedence on usage by the game.
                                 # Audios, textpools, gamescripts and non graphical elements usually utilizes 0x0001.
                                 f0.write(args.build.to_bytes(length=2))
 
-                                # Unknown.
+                                # Unknown but doesn't seem to change between files.
                                 f0.write(b"\x00\x00")
 
                             # Write 0 file size.
@@ -269,58 +308,74 @@ def main():
                             file_0_crc32 = zlib.crc32(f0.read()) & 0xFFFFFFFF
                             f0.write(file_0_crc32.to_bytes(length=4))
 
-                        zip_file = Path(subtarget_dir, f"{subdirectory.name}.zip")
                         files = [i for i in Path(tempdir).iterdir() if not i.is_dir()]
-                        with ZipFile(zip_file, "w", ZIP_DEFLATED) as zip:
+                        if args.unzip is True:
+                            pkg_dir = Path(subtarget_dir, subdirectory.name)
+                            pkg_dir.mkdir(exist_ok=True)
+
                             for file in files:
-                                zip.write(file, arcname=file.name)
+                                shutil.copy(file, pkg_dir)
 
-                        # Complete file 0 crc32.
-                        with open(file_0, "rb") as f0:
-                            file_0_crc32 = zlib.crc32(f0.read()) & 0xFFFFFFFF
+                            # Added file.
+                            n += 1
 
-                        filename = (
-                            str(
-                                Path(subtarget_dir.name, f"{subdirectory.name}")
-                            ).replace("/", ":", count=1)
-                            + ".zip"
-                        )
+                            report_progress(
+                                progress_str(
+                                    n,
+                                    total,
+                                    Style.BRIGHT
+                                    + Fore.YELLOW
+                                    + f"- Added directory: {subdirectory}\n"
+                                    + Style.RESET_ALL,
+                                ),
+                                "",
+                            )
+                            pass
+                        else:
+                            zip_file = Path(subtarget_dir, f"{subdirectory.name}.zip")
+                            with ZipFile(zip_file, "w", ZIP_DEFLATED) as zip:
+                                for file in files:
+                                    zip.write(file, arcname=file.name)
 
-                        # Add/Update Package in DLCIndex.xml.
-                        for root in root_list:
-                            UpdatePackageEntry(
-                                root,
-                                args.platform,
-                                args.version,
-                                args.tier,
-                                str(zip_file.stat().st_size // 1000),
-                                str(file_1.stat().st_size // 1000),
-                                str(file_0_crc32),
-                                filename,
-                                args.language,
+                            # Complete file 0 crc32.
+                            with open(file_0, "rb") as f0:
+                                file_0_crc32 = zlib.crc32(f0.read()) & 0xFFFFFFFF
+
+                            filename = (
+                                str(
+                                    Path(subtarget_dir.name, f"{subdirectory.name}")
+                                ).replace("/", ":", count=1)
+                                + ".zip"
                             )
 
-                        # Added file.
-                        n += 1
+                            # Add/Update Package in DLCIndex.xml.
+                            for root in root_list:
+                                UpdatePackageEntry(
+                                    root,
+                                    args.platform,
+                                    args.version,
+                                    args.tier,
+                                    str(zip_file.stat().st_size // 1000),
+                                    str(file_1.stat().st_size // 1000),
+                                    str(file_0_crc32),
+                                    filename,
+                                    args.language,
+                                )
 
-                        report_progress(
-                            progress_str(
-                                n,
-                                total,
-                                Style.BRIGHT
-                                + Fore.YELLOW
-                                + f"- Added file: {subdirectory}.zip\n"
-                                + Style.RESET_ALL,
-                            ),
-                            "",
-                        )
+                            # Added file.
+                            n += 1
 
-                # Write local tree.
-                ET.indent(tree, "  ")
-                with open(
-                    Path(dlc_index_file.parent, dlc_index_file.stem + ".xml"), "wb"
-                ) as xml_file:
-                    tree.write(xml_file)
+                            report_progress(
+                                progress_str(
+                                    n,
+                                    total,
+                                    Style.BRIGHT
+                                    + Fore.YELLOW
+                                    + f"- Added file: {subdirectory}.zip\n"
+                                    + Style.RESET_ALL,
+                                ),
+                                "",
+                            )
 
                 print(
                     Style.BRIGHT
@@ -329,15 +384,30 @@ def main():
                 )
                 print(Style.RESET_ALL)
 
-            # Update server tree if possible.
-            update_status, server_index = UpdateServerIndex(
-                dlc_index_file,
-                [subdirectory.name for subdirectory in directory.iterdir()],
-                [root.tag for root in root_list],
-            )
-            if update_status is True:
-                print(Style.BRIGHT + Fore.GREEN + f"-> Updated: {server_index}!")
-                print(Style.RESET_ALL)
+                if args.unzip is False:
+                    # Write local tree.
+                    ET.indent(tree, "  ")
+                    with open(
+                        Path(dlc_index_file.parent, dlc_index_file.stem + ".xml"), "wb"
+                    ) as xml_file:
+                        tree.write(xml_file)
+
+                    # Update server tree if possible.
+                    update_status, server_index = UpdateServerIndex(
+                        dlc_index_file,
+                        Path(args.dlc_dir, "dlc"),
+                        [
+                            subdirectory.name
+                            for subdirectory in directory.iterdir()
+                            if subdirectory.is_dir() is True
+                        ],
+                        [root.tag for root in root_list],
+                    )
+                    if update_status is True:
+                        print(
+                            Style.BRIGHT + Fore.GREEN + f"-> Updated: {server_index}!"
+                        )
+                        print(Style.RESET_ALL)
 
     # Cleaning dead packages.
     else:

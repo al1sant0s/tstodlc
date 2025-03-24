@@ -149,11 +149,10 @@ def WriteServerTree(server_index, server_tree):
                 zip.write(server_index_xml, arcname=server_index_xml.name)
 
 
-def UpdateServerIndex(index_file, directories_names, branches):
+def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
     if index_file.exists() is True:
         tree = ET.parse(index_file)
         # Check if server DLCIndex.zip can be found. If it can, grab dlc_index file from there.
-        dlc_dlc = Path(index_file.parent.parent, "dlc")
         server_index, server_tree = GetServerIndexTree(dlc_dlc, "DlcIndex")
         if server_index is not None and server_tree is not None:
             local_root = tree.getroot()
