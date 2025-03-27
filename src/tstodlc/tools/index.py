@@ -76,7 +76,7 @@ def UpdatePackageEntry(
     unc_filesize,
     index_crc,
     filename,
-    language="all",
+    language,
 ):
     # Grab existing packages.
     packages = SearchPackages(root, filename)
@@ -88,13 +88,52 @@ def UpdatePackageEntry(
 
     # Update packages details.
     for pkg in packages:
-        (pkg.set("platform", GetItemfromDict(pkg.attrib, "platform", platform)),)
-        (pkg.set("unzip", GetItemfromDict(pkg.attrib, "unzip", "false")),)
-        (pkg.set("minVersion", GetItemfromDict(pkg.attrib, "minVersion", minVersion)),)
-        (pkg.set("tier", GetItemfromDict(pkg.attrib, "tier", tier)),)
-        (pkg.set("xml", GetItemfromDict(pkg.attrib, "xml", "")),)
-        (pkg.set("type", GetItemfromDict(pkg.attrib, "type", "")),)
-        pkg.set("ignore", GetItemfromDict(pkg.attrib, "ignore", "false"))
+        (
+            pkg.set(
+                "platform",
+                platform
+                if platform is not None
+                else GetItemfromDict(pkg.attrib, "platform", "all"),
+            ),
+        )
+        (
+            pkg.set(
+                "unzip",
+                GetItemfromDict(pkg.attrib, "unzip", "false"),
+            ),
+        )
+        (
+            pkg.set(
+                "minVersion",
+                minVersion
+                if minVersion is not None
+                else GetItemfromDict(pkg.attrib, "minVersion", "4.69.0"),
+            ),
+        )
+        (
+            pkg.set(
+                "tier",
+                tier
+                if tier is not None
+                else GetItemfromDict(pkg.attrib, "tier", "all"),
+            ),
+        )
+        (
+            pkg.set(
+                "xml",
+                GetItemfromDict(pkg.attrib, "xml", ""),
+            ),
+        )
+        (
+            pkg.set(
+                "type",
+                GetItemfromDict(pkg.attrib, "ptype", ""),
+            ),
+        )
+        pkg.set(
+            "ignore",
+            GetItemfromDict(pkg.attrib, "ignore", "false"),
+        )
 
         subelements = {
             "LocalDir": {"name": "dlc"}
@@ -111,8 +150,10 @@ def UpdatePackageEntry(
             else GetSubElementAttributes(pkg, "Version"),
             "FileName": {"val": filename},
             "Language": {"val": language}
-            if pkg.find("Language") is None
-            else GetSubElementAttributes(pkg, "Language"),
+            if language is not None
+            else GetSubElementAttributes(pkg, "Language")
+            if pkg.find("Language") is not None
+            else {"val": "all"},
         }
 
         for key, value in subelements.items():
@@ -221,6 +262,7 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                                     "val",
                                     "NOT DEFINED!",
                                 ),
+                                None,
                             )
                         else:
                             for server_pkg in server_packages:

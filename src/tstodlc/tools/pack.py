@@ -49,42 +49,38 @@ def main():
 
     parser.add_argument(
         "--platform",
-        help="Specify platform for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
-        default="all",
+        help="Specify platform attribute for packages entries.",
     )
 
     parser.add_argument(
         "--version",
-        help="Specify version for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
-        default="4.69.0",
+        help="Specify version attribute for packages entries.",
     )
 
     parser.add_argument(
         "--tier",
-        help="Specify tier for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
-        default="all",
+        help="Specify tier attribute for packages entries.",
     )
 
     parser.add_argument(
         "--language",
-        help="Specify language for packages entries (Only applies if a DLCIndex_XXXX.xml does not already exists).",
-        default="all",
+        help="Specify language for packages entries.",
     )
 
     parser.add_argument(
         "--initial",
-        help="Specify the packages should be installed along with initial packages.",
+        help="Specify whether packages should be installed along with initial packages.",
         action="store_true",
     )
 
     parser.add_argument(
         "--tutorial",
-        help="Specify the packages should be installed along with tutorial packages.",
+        help="Specify wheter packages should be installed along with tutorial packages.",
         action="store_true",
     )
 
     parser.add_argument(
-        "--build",
+        "--priority",
         help="""
         Priority value!
         If two files in game have the same names, the file with the bigger value associated
@@ -97,7 +93,7 @@ def main():
 
     parser.add_argument(
         "--index_only",
-        help="Update DLCIndex_XXXX.xml and server DLCIndex_XXXX.xml only without patching the files again.",
+        help="Update DLCIndex-XXXX.xml and server DLCIndex-XXXX.xml only without patching the files again.",
         action="store_true",
     )
 
@@ -110,7 +106,7 @@ def main():
     parser.add_argument(
         "--clean",
         help="""
-        Remove non existing packages from server DLCIndex_XXXX.xml.
+        Remove non existing packages from server DLCIndex-XXXX.xml.
         When --clean is requested, normal operations (packing dlcs and such) will not happen.
 
         Sugestion of usage:
@@ -223,7 +219,7 @@ def main():
             )
 
             # Start of DLCIndex file.
-            dlc_index_file = Path(directory, f"DLCIndex_{subtarget_dir.name}.xml")
+            dlc_index_file = Path(directory, f"DLCIndex-{subtarget_dir.name}.xml")
 
             tree = GetIndexTree(dlc_index_file, "DlcIndex")
             root = tree.getroot()
@@ -256,6 +252,14 @@ def main():
                         files = [
                             i for i in subdirectory.glob("*") if i.is_dir() is False
                         ]
+
+                        # No files at all. Do nothing!
+                        if len(files) == 0:
+                            colorprint(
+                                Style.BRIGHT + Fore.RED,
+                                f"Warning! No files found at {subdirectory}. Skipping to next subdirectory!",
+                            )
+                            continue
 
                         # Zip all files into file_1.
                         with ZipFile(file_1, "w", ZIP_DEFLATED) as zip:
@@ -324,7 +328,7 @@ def main():
                                 # If two files define the same filenames, the file with the bigger value associated
                                 # with it within 0 file will take precedence on usage by the game.
                                 # Audios, textpools, gamescripts and non graphical elements usually utilizes 0x0001.
-                                f0.write(args.build.to_bytes(length=2))
+                                f0.write(args.priority.to_bytes(length=2))
 
                                 # Unknown but doesn't seem to change between files.
                                 f0.write(b"\x00\x00")
@@ -413,29 +417,29 @@ def main():
                     f"\n\n-> Sucessfully instaled files listed above in {subtarget_dir.relative_to(subtarget_dir.parent.parent)}!",
                 )
 
-                if args.unzip is False:
-                    # Write local tree.
-                    ET.indent(tree, "  ")
-                    with open(
-                        Path(dlc_index_file.parent, dlc_index_file.stem + ".xml"), "wb"
-                    ) as xml_file:
-                        tree.write(xml_file)
+            if args.unzip is False:
+                # Write local tree.
+                ET.indent(tree, "  ")
+                with open(
+                    Path(dlc_index_file.parent, dlc_index_file.stem + ".xml"), "wb"
+                ) as xml_file:
+                    tree.write(xml_file)
 
-                    # Update server tree if possible.
-                    update_status, server_index = UpdateServerIndex(
-                        dlc_index_file,
-                        Path(args.dlc_dir, "dlc"),
-                        [
-                            subdirectory.name
-                            for subdirectory in directory.glob("*")
-                            if subdirectory.is_dir() is True
-                        ],
-                        [root.tag for root in root_list],
+                # Update server tree if possible.
+                update_status, server_index = UpdateServerIndex(
+                    dlc_index_file,
+                    Path(args.dlc_dir, "dlc"),
+                    [
+                        subdirectory.name
+                        for subdirectory in directory.glob("*")
+                        if subdirectory.is_dir() is True
+                    ],
+                    [root.tag for root in root_list],
+                )
+                if update_status is True:
+                    colorprint(
+                        Style.BRIGHT + Fore.GREEN, f"-> Updated: {server_index}!"
                     )
-                    if update_status is True:
-                        colorprint(
-                            Style.BRIGHT + Fore.GREEN, f"-> Updated: {server_index}!"
-                        )
 
     # Cleaning dead packages.
     else:
