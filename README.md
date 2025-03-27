@@ -6,7 +6,33 @@ to your server dlc repository (or whatever place you point it to)
 and automatically update the required index files so the game will
 download them once you log into your server.
 
+
+## Installation
+
+First, make sure have [**python**](https://www.python.org/downloads/)
+and [**git**](https://git-scm.com/downloads) installed on your system.
+
+With those requirements satisfied, run either of the following commands in the command-line interface to install tstodlc, according to your OS:
+
+* Windows installation command.
+```
+python -m pip install tstodlc@git+https://github.com/al1sant0s/tstodlc
+```
+* Linux installation command.
+```
+python3 -m pip install tstodlc@git+https://github.com/al1sant0s/tstodlc
+```
+
 ## Basic usage
+
+```shell
+tstodlc --help
+```
+
+The tool will receive a list of directories (those being the dlcs) and will install them on the last directory you provide (that should be
+the server dlc repository).
+
+## Introduction
 
 Before you can use the tool you first have to make sure that your dlcs follow a basic structure.
 Basically, you should have a directory with the name of your dlc and within
@@ -89,32 +115,73 @@ You will have the following scheme now, just after running the previous command 
   * textpools-pt/
   * textpools-en/
   * DLCIndex-SuperSecretUpdate.xml
+ 
+You can then edit the attributes and parameters in DLCIndex-SuperSecretUpdate.xml and
+save it.
 
-You can edit the attributes and parameters in DLCIndex-SuperSecretUpdate.xml and
-then save it. After that, just run the following command to update the values in
+![Local DLCIndex file for editing.](images/img02.png)
+
+After that, just run the following command to update the values in
 the server DLCIndex-XXXX.zip file.
 
 ```shell
 tstodlc --index_only /path/to/SuperSecretUpdate /path/to/server/dlc/
 ```
 
-![Local DLCIndex file for editing.](images/img02.png)
+![Updating only index files.](images/img03.png)
 
-The --index_only argument will tell tstodlc to just update DLCIndex-XXXX.zip
+Whatever is specified in DLCIndex-SuperSecretUpdate.xml will be written onto DLCIndex-XXXX.zip.
+
+The **--index_only** argument here is important. It will tell tstodlc to just update DLCIndex-XXXX.zip
 file and not reinstall the dlc again. If --index_only was not specified, tstodlc
 would reinstall the dlcs and update DLCIndex-XXXX.zip file as well but
 reinstalling the dlcs would imply in copying all the files again. So you should
 only reinstall a dlc if you had updated something in the files. If the only
 thing you did was to update some package entries in
 DLCIndex-NameOfYourDlcDirectory.xml then you can use use --index_only to just
-update DLCIndex-XXXX.zip file without having to copying all the files again.
+update DLCIndex-XXXX.zip file without having to copy all the files again.
 
 ## Specifying some predefined values for package entries
 
-If you know beforehand some of the attributes each package entry will share, like platform, tier or anything similar.
-You can specify them during the installation of your dlc. For example, the following command will install your dlcs
+If you know beforehand some of the attributes each package entry will share, like platform, tier or anything similar,
+you can specify them during the installation of your dlc. For example, the following command will install your dlcs
 and specify each package entry with **platform: ios**, **minVersion: 4.70.0**, **tier: 100** and **language: en** (english).
 
 ```shell
 tstodlc --platform ios --version 4.70.0 --tier 100 --lang en /path/to/SuperSecretUpdate /path/to/server/dlc/
 ```
+
+![Overwriting package entries part 1.](images/img04.png)
+
+Beware that these arguments will overwrite their values in DLCIndex-SuperSecretUpdate.xml (if that file exists off course). Also, they don't work together with --index_only.
+Bellow is the result from running the previous command:
+
+![Overwriting package entries part 2.](images/img05.png)
+
+## Tutorial and Initial Packages
+
+Use --tutorial and --initial to place your dlc packages within _TutorialPackages_ and _InitialPackages_ sections in DLCIndex-XXXX.zip.
+
+```shell
+tstodlc --initial /path/to/SuperSecretUpdate /path/to/server/dlc/
+```
+```shell
+tstodlc --tutorial /path/to/SuperSecretUpdate /path/to/server/dlc/
+```
+
+## Priority
+
+If your dlcs happen to define files with the same names as other already existing dlcs, the game will have to choose one of them to use. For instance, suppose your dlc defines a file called mybuilding.rgb
+and this file is already defined by another existing dlc in the server dlc repository.
+
+You can force the game to use the files from your dlc by specifying a priority number with --priority.
+This only works if the value you give to --priority is greater than the value associated with the other file in the other dlc.
+
+So if for example you know that mybuilding.rgb has associated with it a value of 2600, you can use the following command to have the game use your mybuilding.rgb file:
+
+```shell
+tstodlc --priority 2601 /path/to/SuperSecretUpdate /path/to/server/dlc/
+```
+
+Any value greater than 2600 would have effect in this case. Beware that these priority value is defined in the 0 file of a dlc component, and this will apply to all the dlc components in this case.
+So all the files under buildings/, buildings-menu/, decorations/, decorations-menu/, textpools-pt/, textpools-en/ will all get the same priority value of 2601 as a consequence of the execution of the previous command.
