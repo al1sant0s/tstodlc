@@ -12,11 +12,7 @@ from tstodlc.tools.index import (
     GetIndexTree,
     UpdateServerIndex,
 )
-from tstodlc.tools.progress import report_progress
-
-
-# Warning: this script requires ImageMagick to work. If you do not have installed in your system,
-# you will have to install it first before using the script.
+from tstodlc.tools.progress import report_progress, colorprint
 
 
 def progress_str(n, total, message):
@@ -139,12 +135,10 @@ def main():
 
     # Normal operation.
     if args.clean is False:
-        print(
-            Style.BRIGHT
-            + Fore.MAGENTA
-            + "\n\n--- PACKING FILES INTO 0 and 1 FILES ---\n"
+        colorprint(
+            Style.BRIGHT + Fore.MAGENTA,
+            "\n\n--- PACKING FILES INTO 0 and 1 FILES ---\n",
         )
-        print(Style.RESET_ALL)
 
         # List of input directories.
         directories = [Path(item) for item in args.input_dir]
@@ -152,8 +146,47 @@ def main():
         # Help with the progress report.
         n = 0
         total = sum(
-            (len(list(Path(directory).iterdir())) for directory in args.input_dir)
+            (len(list(Path(directory).glob("*/"))) for directory in args.input_dir)
         )
+
+        if total == 0:
+            colorprint(
+                Style.BRIGHT + Fore.RED,
+                "-> Warning! No subdirectories found under the arguments you have provided.",
+            )
+            colorprint(
+                Style.BRIGHT + Fore.YELLOW,
+                """
+                \r-  Remember that you should specify your dlc directories.
+                \r-  That means that each dlc should be a directory.
+
+                \r-  Within each dlc (each directory) there should be subdirectories
+                \r-  corresponding to dlc components.
+
+                \r-  Within these subdirectories there should be the files corresponding to
+                \r-  that dlc component.
+                """,
+            )
+            colorprint(
+                Style.BRIGHT + Fore.CYAN,
+                "-> An example is given bellow with a dlc that is named 'SuperSecretUpdate'.\n",
+            )
+            colorprint(
+                Style.BRIGHT + Fore.WHITE,
+                "$  tstodlc SuperSecretUpdate/ /path/to/server/dlc/\n",
+            )
+            colorprint(
+                Style.BRIGHT + Fore.CYAN,
+                "** The contents of the ilustrated SuperSecretUpdate directory are shown bellow.\n",
+            )
+            colorprint(Style.BRIGHT + Fore.WHITE, "\t - SuperSecretUpdate/", "")
+            colorprint(Style.BRIGHT + Fore.WHITE, "\t\t - textpools-pt/", "")
+            colorprint(Style.BRIGHT + Fore.WHITE, "\t\t - textpools-en/", "")
+            colorprint(Style.BRIGHT + Fore.WHITE, "\t\t - buildings/", "")
+            colorprint(Style.BRIGHT + Fore.WHITE, "\t\t - decorations/", "")
+            colorprint(Style.BRIGHT + Fore.WHITE, "\t\t - buildings-menu/", "")
+            colorprint(Style.BRIGHT + Fore.WHITE, "\t\t - decorations-menu/", "\n\n")
+            return
 
         # Set destination of dlc files.
         target_dir = Path(args.dlc_dir)
@@ -184,12 +217,10 @@ def main():
             subtarget_dir = Path(target_dir, directory.name)
             subtarget_dir.mkdir(exist_ok=True)
 
-            print(
-                Style.BRIGHT
-                + Fore.LIGHTBLUE_EX
-                + f"- Archive: {subtarget_dir.relative_to(subtarget_dir.parent.parent)}:"
+            colorprint(
+                Style.BRIGHT + Fore.LIGHTBLUE_EX,
+                f"- Archive: {subtarget_dir.relative_to(subtarget_dir.parent.parent)}:",
             )
-            print(Style.RESET_ALL)
 
             # Start of DLCIndex file.
             dlc_index_file = Path(directory, f"DLCIndex_{subtarget_dir.name}.xml")
@@ -213,7 +244,7 @@ def main():
             if args.index_only is False:
                 for subdirectory in (
                     subdirectory
-                    for subdirectory in directory.iterdir()
+                    for subdirectory in directory.glob("*")
                     if subdirectory.is_dir() is True
                 ):
                     with tempfile.TemporaryDirectory() as tempdir:
@@ -308,7 +339,7 @@ def main():
                             file_0_crc32 = zlib.crc32(f0.read()) & 0xFFFFFFFF
                             f0.write(file_0_crc32.to_bytes(length=4))
 
-                        files = [i for i in Path(tempdir).iterdir() if not i.is_dir()]
+                        files = [i for i in Path(tempdir).glob("*") if not i.is_dir()]
                         if args.unzip is True:
                             pkg_dir = Path(subtarget_dir, subdirectory.name)
                             pkg_dir.mkdir(exist_ok=True)
@@ -377,12 +408,10 @@ def main():
                                 "",
                             )
 
-                print(
-                    Style.BRIGHT
-                    + Fore.GREEN
-                    + f"\n\n-> Sucessfully instaled files listed above in {subtarget_dir.relative_to(subtarget_dir.parent.parent)}!"
+                colorprint(
+                    Style.BRIGHT + Fore.GREEN,
+                    f"\n\n-> Sucessfully instaled files listed above in {subtarget_dir.relative_to(subtarget_dir.parent.parent)}!",
                 )
-                print(Style.RESET_ALL)
 
                 if args.unzip is False:
                     # Write local tree.
@@ -398,27 +427,24 @@ def main():
                         Path(args.dlc_dir, "dlc"),
                         [
                             subdirectory.name
-                            for subdirectory in directory.iterdir()
+                            for subdirectory in directory.glob("*")
                             if subdirectory.is_dir() is True
                         ],
                         [root.tag for root in root_list],
                     )
                     if update_status is True:
-                        print(
-                            Style.BRIGHT + Fore.GREEN + f"-> Updated: {server_index}!"
+                        colorprint(
+                            Style.BRIGHT + Fore.GREEN, f"-> Updated: {server_index}!"
                         )
-                        print(Style.RESET_ALL)
 
     # Cleaning dead packages.
     else:
-        print(
-            Style.BRIGHT
-            + Fore.MAGENTA
-            + "\n\n--- CLEANING MISSING PACKAGES FROM SERVER DLCIndex ---\n\n"
+        colorprint(
+            Style.BRIGHT + Fore.MAGENTA,
+            "\n\n--- CLEANING MISSING PACKAGES FROM SERVER DLCIndex ---\n\n",
         )
         RemoveDeadPackages(
             Path(args.dlc_dir), ["DlcIndex", "InitialPackages", "TutorialPackages"]
         )
 
-    print(Style.BRIGHT + Fore.MAGENTA + "\n--- JOB COMPLETED!!! ---\n")
-    print(Style.RESET_ALL)
+    colorprint(Style.BRIGHT + Fore.MAGENTA, "\n--- JOB COMPLETED!!! ---\n")

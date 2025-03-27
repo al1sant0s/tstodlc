@@ -2,7 +2,9 @@ import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
+
+from tstodlc.tools.progress import colorprint
 
 
 def GetItemfromDict(dic, key, default):
@@ -245,8 +247,9 @@ def RemoveDeadPackages(dlc_root, branches):
                 server_root if branch == server_root.tag else server_tree.find(branch)
             )
             if server_branch is not None:
-                print(Style.BRIGHT + Fore.CYAN + f"* Checking <{server_branch.tag}>")
-                print(Style.RESET_ALL)
+                colorprint(
+                    Style.BRIGHT + Fore.CYAN, f"* Checking <{server_branch.tag}>"
+                )
                 for pkg in server_branch.findall("Package"):
                     filename = GetItemfromDict(
                         GetSubElementAttributes(pkg, "FileName"), "val", None
@@ -255,26 +258,20 @@ def RemoveDeadPackages(dlc_root, branches):
                         filename = filename.replace(":", "/")
                         filename = Path(dlc_root, filename)
                         if filename.exists() is False:
-                            print(
-                                Style.BRIGHT
-                                + Fore.YELLOW
-                                + f"- {filename.relative_to(dlc_root)} was not found!"
+                            colorprint(
+                                Style.BRIGHT + Fore.YELLOW,
+                                f"- {filename.relative_to(dlc_root)} was not found!",
                             )
-                            print(Style.RESET_ALL)
                             server_branch.remove(pkg)
                             removed = True
 
         WriteServerTree(server_index, server_tree)
         if removed is True:
-            print(
-                Style.BRIGHT
-                + Fore.GREEN
-                + f"\n-> All packages listed above were removed from {server_index.name}!"
+            colorprint(
+                Style.BRIGHT + Fore.GREEN,
+                f"\n-> All packages listed above were removed from {server_index.name}!",
             )
-            print(Style.RESET_ALL)
         else:
-            print(Style.BRIGHT + Fore.GREEN + "-> Nothing to clean!")
-            print(Style.RESET_ALL)
+            colorprint(Style.BRIGHT + Fore.GREEN, "-> Nothing to clean!")
     else:
-        print(Style.BRIGHT + Fore.RED + "-> Server DLCIndex was not found!")
-        print(Style.RESET_ALL)
+        colorprint(Style.BRIGHT + Fore.RED, "-> Server DLCIndex was not found!")
