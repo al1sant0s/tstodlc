@@ -26,8 +26,7 @@ Then, in your working directory you will have your dlc structure similar to the 
   * textpools-pt/
   * textpools-en/
 
-[]
-![Basic dlc directory strucuture.](images/img_00.png)
+![Basic dlc directory strucuture.](images/img00.png)
 
 Do notice that the names of the root directory (dlc directory) and subdirectories (dlc components)
 do not matter and you can name them to whatever you wish to.
@@ -36,7 +35,7 @@ In those subdirectories you will place the files you need to.
 For example: the buildings, decorations and menu subdirectories will probably contain rgb,
 bsv3 and xml files. It's up to you to decide which files should go on which places.
 
-After you have done the manual job of creating and adding the required the files to compose your dlc,
+After you have done the manual job of creating and adding the required files to compose your dlc,
 it's time to pack the files and install them onto your server. This is as simple as running the following
 command on the command-line interface:
 
@@ -48,7 +47,7 @@ Once this command is ran, a file called DLCIndex-SuperSecretUpdate.xml will be c
 In this file you will be able to edit the dlc packages entries and update the index from the server.
 This will be explained better in the next sections.
 
-![Packing a dlc.](images/img_01.png)
+![Packing a dlc.](images/img01.png)
 
 In this situation you would replace **/path/to/SuperSecretUpdate/** with the real relative or absolute directory path
 to your dlc folder, in this example named to _SuperSecretUpdate_. Similarly, **/path/to/server/dlc/** would refer to
@@ -60,7 +59,7 @@ this new directory. Finally, the tool will find and update the necessary **DLCIn
 
 ## Updating package entries
 
-Let's make some notation clear. We will refer to two kinds of files here, DLCIndex.zip and DLCIndex-XXXX.zip
+Let's make some things clear. We will refer to two kinds of files here, DLCIndex.zip and DLCIndex-XXXX.zip
 (the extra X's are just a placeholder for whatever comes after the dash).
 
 If we wish to get into more details, we need to explain how the game retrieves dlcs from the server. When the game starts connecting to the server
@@ -95,11 +94,11 @@ You can edit the attributes and parameters in DLCIndex-SuperSecretUpdate.xml and
 then save it. After that, just run the following command to update the values in
 the server DLCIndex-XXXX.zip file.
 
-![Local DLCIndex file for editing.](images/img_02.png)
-
 ```shell
 tstodlc --index_only /path/to/SuperSecretUpdate /path/to/server/dlc/
 ```
+
+![Local DLCIndex file for editing.](images/img02.png)
 
 The --index_only argument will tell tstodlc to just update DLCIndex-XXXX.zip
 file and not reinstall the dlc again. If --index_only was not specified, tstodlc
@@ -112,8 +111,10 @@ update DLCIndex-XXXX.zip file without having to copying all the files again.
 
 ## Specifying some predefined values for package entries
 
-If you have not installed your dlc yet and you know some of the package entries
-will have the same values you can use some arguments to specify them at the
-moment of the installation (note that these arguments only apply if the
-DLCIndex_NameOfYourDlcDirectory.xml does not exist, because if it does exist the
-tool will always prioritize the values contained in that file).
+If you know beforehand some of the attributes each package entry will share, like platform, tier or anything similar.
+You can specify them during the installation of your dlc. For example, the following command will install your dlcs
+and specify each package entry with **platform: ios**, **minVersion: 4.70.0**, **tier: 100** and **language: en** (english).
+
+```shell
+tstodlc --platform ios --version 4.70.0 --tier 100 --lang en /path/to/SuperSecretUpdate /path/to/server/dlc/
+```
