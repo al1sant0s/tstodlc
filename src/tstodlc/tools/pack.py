@@ -288,7 +288,7 @@ def main():
                             # Full filepath.
                             write_str_to_file(f0, str(subdirectory) + "/1")
 
-                            # Unknown but doesn't seem to change between files.
+                            # Number of zipped files and allocated space for filename and crc32.
                             f0.write(b"\x00\x01\x00\x08")
 
                             # 1 filename.
