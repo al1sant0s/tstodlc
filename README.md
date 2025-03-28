@@ -6,7 +6,6 @@ to your server dlc repository (or whatever place you point it to)
 and automatically update the required index files so the game will
 download them once you log into your server.
 
-
 ## Installation
 
 First, make sure have [**python**](https://www.python.org/downloads/)
@@ -15,10 +14,13 @@ and [**git**](https://git-scm.com/downloads) installed on your system.
 With those requirements satisfied, run either of the following commands in the command-line interface to install tstodlc, according to your OS:
 
 * Windows installation command.
+
 ```
 python -m pip install tstodlc@git+https://github.com/al1sant0s/tstodlc
 ```
+
 * Linux installation command.
+
 ```
 python3 -m pip install tstodlc@git+https://github.com/al1sant0s/tstodlc
 ```
@@ -38,8 +40,8 @@ Before you can use the tool you first have to make sure that your dlcs follow a 
 Basically, you should have a directory with the name of your dlc and within
 that directory you should have subdirectories that each correspond to a specific component of your dlc.
 
-For example, suppose you are creating a dlc and want to name it SuperSecretUpdate. You decide that this dlc
-will bring with it: textpools for two languages (portuguese and english), some buildings, some decorations and the necessary
+For example, suppose you are creating a dlc and want to name it _SuperSecretUpdate_. You decide that this dlc
+will bring along: textpools for two languages (portuguese and english), some buildings, some decorations and the necessary
 menu icons for those last two.
 
 Then, in your working directory you will have your dlc structure similar to the following scheme:
@@ -69,7 +71,7 @@ command on the command-line interface:
 tstodlc /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
-Once this command is ran, a file called DLCIndex-SuperSecretUpdate.xml will be created under /path/to/SuperSecretUpdate/.
+Once this command is ran, a file called **DLCIndex-SuperSecretUpdate.xml** will be created under **/path/to/SuperSecretUpdate/.**
 In this file you will be able to edit the dlc packages entries and update the index from the server.
 This will be explained better in the next sections.
 
@@ -80,7 +82,7 @@ to your dlc folder, in this example named to _SuperSecretUpdate_. Similarly, **/
 the actual path to your server dlc repository (the places where all the dlcs are).
 
 If you do this correctly, a new directory under /path/to/server/dlc/ will be created with the same name you've used for your dlc
-directory, in this example a new directory named _SuperSecretUpdate_ would be made. The subdirectories would be zipped and placed into
+directory, in this example a new directory named _SuperSecretUpdate/_ would be made. The subdirectories would be zipped and placed into
 this new directory. Finally, the tool will find and update the necessary **DLCIndex-XXXX.zip** file.
 
 ## Updating package entries
@@ -115,7 +117,7 @@ You will have the following scheme now, just after running the previous command 
   * textpools-pt/
   * textpools-en/
   * DLCIndex-SuperSecretUpdate.xml
- 
+
 You can then edit the attributes and parameters in DLCIndex-SuperSecretUpdate.xml and
 save it.
 
@@ -165,6 +167,7 @@ Use --tutorial and --initial to place your dlc packages within _TutorialPackages
 ```shell
 tstodlc --initial /path/to/SuperSecretUpdate /path/to/server/dlc/
 ```
+
 ```shell
 tstodlc --tutorial /path/to/SuperSecretUpdate /path/to/server/dlc/
 ```
@@ -187,7 +190,6 @@ tstodlc --priority 2601 /path/to/SuperSecretUpdate /path/to/server/dlc/
 Any value greater than 2600 would have effect in this case. Beware that these priority value is defined in the 0 file of a dlc component, and this will apply to all the dlc components in this case.
 So all the files under buildings/, buildings-menu/, decorations/, decorations-menu/, textpools-pt/, textpools-en/ will all get the same priority value of 2601 as a consequence of the execution of the previous command.
 
-
 ## Unzip
 
 tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --unzip argument. This might be useful for editing apk and ipa interval files.
@@ -198,9 +200,10 @@ tstodlc --unzip /path/to/SuperSecretUpdate /path/to/server/dlc/
 
 This will copy each dlc component folder over the destination.
 
-## Unistalling dlcs
+## Uninstalling dlcs
 
-Unistalling dlcs from the server dlc repository is as easy as installing them. First, either remove (move it or delete it) the entire dlc directory under the server
+Uninstalling dlcs from the server dlc repository is as easy as installing them and it's done using the --clean argument.
+First, either remove (move it or delete it) the entire dlc directory under the server
 dlc repository or some of the dlc components (the zip files inside the folders). After that run the following command  to update the server DLCIndex-XXXX.zip file:
 
 ```shell
@@ -208,3 +211,9 @@ tstodlc --clean . /path/to/server/dlc/
 ```
 
 ![Cleaning.](images/img06.png)
+
+## Installing multiple dlcs at once
+
+Installing multiple dlcs at once is possible and really simple as shown in the image bellow.
+
+![Installing multiple dlcs.](images/img07.png)
