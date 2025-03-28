@@ -39,7 +39,7 @@ def main():
     init()
     parser = argparse.ArgumentParser(
         description="""
-        This is a simple script for packeging files for usage with "The Simpsons: Tapped Out" game.
+        This is a simple script for packaging files for usage with "The Simpsons: Tapped Out" game.
         It receives a list of directories containing the files, with the last provided directory being
         the directory where the results will be stored. The files are packed into 1 file
         and the 0 file is created accordingly.
@@ -49,22 +49,22 @@ def main():
 
     parser.add_argument(
         "--platform",
-        help="Specify platform attribute for packages entries.",
+        help="Specify platform attribute for package entries.",
     )
 
     parser.add_argument(
         "--version",
-        help="Specify version attribute for packages entries.",
+        help="Specify version attribute for package entries.",
     )
 
     parser.add_argument(
         "--tier",
-        help="Specify tier attribute for packages entries.",
+        help="Specify tier attribute for package entries.",
     )
 
     parser.add_argument(
         "--language",
-        help="Specify language for packages entries.",
+        help="Specify language for package entries.",
     )
 
     parser.add_argument(
@@ -75,7 +75,7 @@ def main():
 
     parser.add_argument(
         "--tutorial",
-        help="Specify wheter packages should be installed along with tutorial packages.",
+        help="Specify whether packages should be installed along with tutorial packages.",
         action="store_true",
     )
 
@@ -109,7 +109,7 @@ def main():
         Remove non existing packages from server DLCIndex-XXXX.xml.
         When --clean is requested, normal operations (packing dlcs and such) will not happen.
 
-        Sugestion of usage:
+        Suggestion of usage:
 
         tstodlc --clean . /path/to/server_dlc_directory
         """,
@@ -275,8 +275,6 @@ def main():
                             f0.write(b"\x00\x00\x00\x00")
 
                             # Biggest amount of allocated bytes.
-                            f0.write(b"\x00")
-
                             longest_filename = sorted(
                                 [file.name for file in files], key=len, reverse=True
                             )[0]
@@ -285,7 +283,7 @@ def main():
                                 + len(Path(longest_filename).suffix[1:])
                                 + 14
                             )
-                            f0.write(longest_length.to_bytes())
+                            f0.write(longest_length.to_bytes(length=2))
 
                             f0.write(b"\x00")
 

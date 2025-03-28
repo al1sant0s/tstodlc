@@ -8,7 +8,7 @@ download them once you log into your server.
 
 ## Installation
 
-First, make sure have [**python**](https://www.python.org/downloads/)
+First, make sure you have [**python**](https://www.python.org/downloads/)
 and [**git**](https://git-scm.com/downloads) installed on your system.
 
 With those requirements satisfied, run either of the following commands in the command-line interface to install tstodlc, according to your OS:
@@ -43,7 +43,7 @@ Basically, you should have a directory with the name of your dlc and within
 that directory you should have subdirectories that each correspond to a specific component of your dlc.
 
 For example, suppose you are creating a dlc and want to name it _SuperSecretUpdate_. You decide that this dlc
-will bring along: textpools for two languages (portuguese and english), some buildings, some decorations and the necessary
+will bring along: textpools for two languages (Portuguese and English), some buildings, some decorations and the necessary
 menu icons for those last two.
 
 Then, in your working directory you will have your dlc structure similar to the following scheme:
@@ -56,7 +56,7 @@ Then, in your working directory you will have your dlc structure similar to the 
   * textpools-pt/
   * textpools-en/
 
-![Basic dlc directory strucuture.](images/img00.png)
+![Basic dlc directory structure.](images/img00.png)
 
 Do notice that the names of the root directory (dlc directory) and subdirectories (dlc components)
 do not matter and you can name them to whatever you wish to.
@@ -149,7 +149,7 @@ update DLCIndex-XXXX.zip file without having to copy all the files again.
 
 If you know beforehand some of the attributes each package entry will share, like platform, tier or anything similar,
 you can specify them during the installation of your dlc. For example, the following command will install your dlcs
-and specify each package entry with **platform: ios**, **minVersion: 4.70.0**, **tier: 100** and **language: en** (english).
+and specify each package entry with **platform: ios**, **minVersion: 4.70.0**, **tier: 100** and **language: en** (English).
 
 ```shell
 tstodlc --platform ios --version 4.70.0 --tier 100 --lang en /path/to/SuperSecretUpdate /path/to/server/dlc/
@@ -189,12 +189,12 @@ So if for example you know that mybuilding.rgb has associated with it a value of
 tstodlc --priority 2601 /path/to/SuperSecretUpdate /path/to/server/dlc/
 ```
 
-Any value greater than 2600 would have effect in this case. Beware that these priority value is defined in the 0 file of a dlc component, and this will apply to all the dlc components in this case.
+Any value greater than 2600 would have effect in this case. Beware that these priority values are defined in the 0 file of a dlc component, and this will apply to all the dlc components in this case.
 So all the files under buildings/, buildings-menu/, decorations/, decorations-menu/, textpools-pt/, textpools-en/ will all get the same priority value of 2601 as a consequence of the execution of the previous command.
 
 ## Unzip
 
-tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --unzip argument. This might be useful for editing apk and ipa interval files.
+tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --unzip argument. This might be useful for editing apk and ipa internal files.
 
 ```shell
 tstodlc --unzip /path/to/SuperSecretUpdate /path/to/server/dlc/
@@ -206,7 +206,7 @@ This will copy each dlc component folder over the destination.
 
 Uninstalling dlcs from the server dlc repository is as easy as installing them and it's done using the --clean argument.
 First, either remove (move it, rename it or delete it) the entire dlc directory under the server
-dlc repository or some of the dlc components (the zip files inside the folders). After that run the following command  to update the server DLCIndex-XXXX.zip file:
+dlc repository or some of its dlc components (the zip files inside the folders). After that run the following command  to update the server DLCIndex-XXXX.zip file:
 
 ```shell
 tstodlc --clean . /path/to/server/dlc/
