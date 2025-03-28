@@ -226,6 +226,6 @@ The command you use in this situation is the following one:
 tstodlc /path/to/dlc01/ /path/to/dlc02/ path/to/dlc03/ /path/to/dlcN/ /path/to/server/dlc/
 ```
 
-The first N - 1 directories are the dlcs you want to install and the last one as usual is where they will be installed.
+The first N directories are the dlcs you want to install and the last one as usual is where they will be installed.
 After the command is executed, under each /path/to/dlcXX/ an index file will be created so you can edit their correspondent packages entries.
 All previous options discussed earlier work here as well.
