@@ -27,6 +27,8 @@ python3 -m pip install tstodlc@git+https://github.com/al1sant0s/tstodlc
 
 ## Basic usage
 
+To get the full help execute the following command:
+
 ```shell
 tstodlc --help
 ```
@@ -203,7 +205,7 @@ This will copy each dlc component folder over the destination.
 ## Uninstalling dlcs
 
 Uninstalling dlcs from the server dlc repository is as easy as installing them and it's done using the --clean argument.
-First, either remove (move it or delete it) the entire dlc directory under the server
+First, either remove (move it, rename it or delete it) the entire dlc directory under the server
 dlc repository or some of the dlc components (the zip files inside the folders). After that run the following command  to update the server DLCIndex-XXXX.zip file:
 
 ```shell
@@ -217,3 +219,13 @@ tstodlc --clean . /path/to/server/dlc/
 Installing multiple dlcs at once is possible and really simple as shown in the image bellow.
 
 ![Installing multiple dlcs.](images/img07.png)
+
+The command you use in this situation is the following one:
+
+```shell
+tstodlc /path/to/dlc01/ /path/to/dlc02/ path/to/dlc03/ /path/to/dlcN/ /path/to/server/dlc/
+```
+
+The first N - 1 directories are the dlcs you want to install and the last one as usual is where they will be installed.
+After the command is executed, under each /path/to/dlcXX/ an index file will be created so you can edit their correspondent packages entries.
+All previous options discussed earlier work here as well.
