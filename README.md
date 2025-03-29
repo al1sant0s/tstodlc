@@ -6,6 +6,13 @@ to your server dlc repository (or whatever place you point it to)
 and automatically update the required index files so the game will
 download them once you log into your server.
 
+**Highlighted main features:**
+
+* install multiple dlcs at once;
+* update dlc attributes and parameters at anytime;
+* update only files that have been changed to avoid repeated long installation times;
+* auto update server index files to include or remove packages;
+
 ## Installation
 
 First, make sure you have [**python**](https://www.python.org/downloads/)
@@ -136,14 +143,11 @@ tstodlc --index_only /path/to/SuperSecretUpdate /path/to/server/dlc/
 
 Whatever is specified in DLCIndex-SuperSecretUpdate.xml will be written onto DLCIndex-XXXX.zip.
 
-The **--index_only** argument here is important. It will tell tstodlc to just update DLCIndex-XXXX.zip
-file and not reinstall the dlc again. If --index_only was not specified, tstodlc
-would reinstall the dlcs and update DLCIndex-XXXX.zip file as well but
-reinstalling the dlcs would imply in copying all the files again. So you should
-only reinstall a dlc if you had updated something in the files. If the only
-thing you did was to update some package entries in
-DLCIndex-NameOfYourDlcDirectory.xml then you can use use --index_only to just
-update DLCIndex-XXXX.zip file without having to copy all the files again.
+The **--index_only** argument here is optional. It will tell tstodlc to just update DLCIndex-XXXX.zip
+file and not reinstall any dlcs again. If --index_only was not specified, tstodlc
+**would still check** if dlc files have changed since last usage and only then it would reinstall
+the changed dlc components.  Regardless, DLCIndex-XXXX.zip file would still be updated to include anything new
+from DLCIndex-SuperSecretUpdate.xml.
 
 ## Specifying some predefined values for package entries
 
@@ -157,7 +161,8 @@ tstodlc --platform ios --version 4.70.0 --tier 100 --lang en /path/to/SuperSecre
 
 ![Overwriting package entries part 1.](images/img04.png)
 
-Beware that these arguments will overwrite their values in DLCIndex-SuperSecretUpdate.xml (if that file exists off course). Also, they don't work together with --index_only.
+Beware that these arguments will overwrite their values in DLCIndex-SuperSecretUpdate.xml (if that file exists off course).
+Also, they don't work together with --index_only.
 Bellow is the result from running the previous command:
 
 ![Overwriting package entries part 2.](images/img05.png)
@@ -179,18 +184,25 @@ tstodlc --tutorial /path/to/SuperSecretUpdate /path/to/server/dlc/
 If your dlcs happen to define files with the same names as other already existing dlcs, the game will have to choose one of them to use. For instance, suppose your dlc defines a file called mybuilding.rgb
 and this file is already defined by another existing dlc in the server dlc repository.
 
-You can force the game to use the files from your dlc by specifying a priority number with --priority.
+You can force the game to use the files from your dlc by specifying a priority positive number with --priority.
 This only works if the value you give to --priority is greater than the value associated with the other file in the other dlc.
 These values are defined in the 0 files from each dlc component.
 
-So if for example you know that mybuilding.rgb has associated with it a value of 2600, you can use the following command to have the game use your mybuilding.rgb file:
+So if for example you know that mybuilding.rgb has associated with it a value of 2600,
+you can use the following command to have the game use your mybuilding.rgb file:
 
 ```shell
 tstodlc --priority 2601 /path/to/SuperSecretUpdate /path/to/server/dlc/
 ```
 
-Any value greater than 2600 would have effect in this case. Beware that these priority values are defined in the 0 file of a dlc component, and this will apply to all the dlc components in this case.
-So all the files under buildings/, buildings-menu/, decorations/, decorations-menu/, textpools-pt/, textpools-en/ will all get the same priority value of 2601 as a consequence of the execution of the previous command.
+Any value greater than 2600 would have effect in this case. Beware that these priority values are defined in the 0 file of a dlc component,
+and this will apply to all the dlc components in this case.
+So all the files under buildings/, buildings-menu/, decorations/, decorations-menu/, textpools-pt/, textpools-en/
+will all get the same priority value of 2601 as a consequence of the execution of the previous command.
+
+Two more things to consider. One, if not specified default priority value used during dlc installation is 1.
+Two, every time you specify --priority tstodlc will reinstall your dlcs, no matter if any files have been changed or not.
+This is a way to guarantee you are able to update priority values from dlcs that already have been installed.
 
 ## Unzip
 

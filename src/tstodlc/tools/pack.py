@@ -87,7 +87,6 @@ def main():
         with it within 0 file will take precedence on usage by the game.
         Audios, textpools, gamescripts and non graphical elements usually uses 1.
         """,
-        default=1,
         type=int,
     )
 
@@ -243,6 +242,31 @@ def main():
                     for subdirectory in directory.glob("*")
                     if subdirectory.is_dir() is True
                 ):
+                    # Only install subdirectory if it has changed it in destination subdirectory or --priority has been set.
+                    subpath = Path(
+                        subtarget_dir,
+                        subdirectory.name + ("" if args.unzip is True else ".zip"),
+                    )
+                    if (
+                        subpath.exists() is True
+                        and args.priority is None
+                        and subdirectory.stat().st_mtime_ns < subpath.stat().st_mtime_ns
+                    ):
+                        n += 1
+                        report_progress(
+                            progress_str(
+                                n,
+                                total,
+                                Style.BRIGHT
+                                + Fore.WHITE
+                                + f"- {subdirectory.name} has not changed since last time!\n"
+                                + Style.RESET_ALL,
+                            ),
+                            "",
+                        )
+
+                        continue
+
                     with tempfile.TemporaryDirectory() as tempdir:
                         # Main files.
                         file_0 = Path(tempdir, "0")
@@ -326,7 +350,11 @@ def main():
                                 # If two files define the same filenames, the file with the bigger value associated
                                 # with it within 0 file will take precedence on usage by the game.
                                 # Audios, textpools, gamescripts and non graphical elements usually utilizes 0x0001.
-                                f0.write(args.priority.to_bytes(length=2))
+                                f0.write(
+                                    b"\x00\x01"
+                                    if args.priority is None
+                                    else args.priority.to_bytes(length=2)
+                                )
 
                                 # Unknown but doesn't seem to change between files.
                                 f0.write(b"\x00\x00")
