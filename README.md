@@ -32,6 +32,8 @@ python -m pip install tstodlc@git+https://github.com/al1sant0s/tstodlc
 python3 -m pip install tstodlc@git+https://github.com/al1sant0s/tstodlc
 ```
 
+You will also need to patch an apk/ipa to bypass IndexFileSig. For that you can use this [**patcher**](https://github.com/al1sant0s/Tsto_patcher).
+
 ## Basic usage
 
 To get the full help execute the following command:
