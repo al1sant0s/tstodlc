@@ -36,7 +36,7 @@ def GetXmlFromFile(index_file, root_tag):
     if index_file.exists() is True:
         if index_file.suffix == ".zip":
             with tempfile.TemporaryDirectory() as tempdir:
-                with ZipFile(index_file) as ZObject:
+                with ZipFile(index_file, strict_timestamps=False) as ZObject:
                     ZObject.extractall(path=Path(tempdir, "extracted"))
                     xml_file = Path(
                         tempdir,
@@ -169,7 +169,7 @@ def GetServerIndexTree(dlc_dlc, root):
     master_index_zip = Path(dlc_dlc, "DLCIndex.zip")
     if master_index_zip.exists():
         with tempfile.TemporaryDirectory() as tempdir:
-            with ZipFile(master_index_zip) as ZObject:
+            with ZipFile(master_index_zip, strict_timestamps=False) as ZObject:
                 ZObject.extractall(path=Path(tempdir, "extracted"))
                 master_index = Path(tempdir, "extracted", "DLCIndex.xml")
                 master_tree = GetXmlFromFile(master_index, "MasterDLCIndex")
