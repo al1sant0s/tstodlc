@@ -2,6 +2,7 @@ import argparse
 import zlib
 import tempfile
 import shutil
+import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -405,7 +406,7 @@ def main():
                             filename = (
                                 str(
                                     Path(subtarget_dir.name, f"{subdirectory.name}")
-                                ).replace("/", ":", count=1)
+                                ).replace(os.sep, ":", count=1)
                                 + ".zip"
                             )
 

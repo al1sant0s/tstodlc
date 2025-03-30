@@ -1,3 +1,4 @@
+import os
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -297,7 +298,7 @@ def RemoveDeadPackages(dlc_root, branches):
                         GetSubElementAttributes(pkg, "FileName"), "val", None
                     )
                     if filename is not None:
-                        filename = filename.replace(":", "/")
+                        filename = filename.replace(":", os.sep)
                         filename = Path(dlc_root, filename)
                         if filename.exists() is False:
                             colorprint(
