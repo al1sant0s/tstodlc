@@ -142,7 +142,7 @@ def UpdatePackageEntry(
             "FileSize": {"val": filesize},
             "UncompressedFileSize": {"val": unc_filesize},
             "IndexFileCRC": {"val": index_crc},
-            "IndexFileSig": {"val": "You should patch the APK to bypass this!"}
+            "IndexFileSig": {"val": "You should patch the APK/IPA to bypass this!"}
             if pkg.find("IndexFileSig") is None
             else GetSubElementAttributes(pkg, "IndexFileSig"),
             "Version": {"val": "1"}

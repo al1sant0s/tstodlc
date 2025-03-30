@@ -312,7 +312,7 @@ def main():
                             f0.write(b"\x00")
 
                             # Full filepath.
-                            write_str_to_file(f0, str(subdirectory) + "/1")
+                            write_str_to_file(f0, str(subdirectory.name) + "/1")
 
                             # Number of zipped files and allocated space for filename and crc32.
                             f0.write(b"\x00\x01\x00\x08")

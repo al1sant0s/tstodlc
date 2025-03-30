@@ -138,7 +138,7 @@ After that, just run the following command to update the values in
 the server DLCIndex-XXXX.zip file.
 
 ```shell
-tstodlc --index_only /path/to/SuperSecretUpdate /path/to/server/dlc/
+tstodlc --index_only /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 ![Updating only index files.](images/img03.png)
@@ -158,7 +158,7 @@ you can specify them during the installation of your dlc. For example, the follo
 and specify each package entry with **platform: ios**, **minVersion: 4.70.0**, **tier: 100** and **language: en** (English).
 
 ```shell
-tstodlc --platform ios --version 4.70.0 --tier 100 --lang en /path/to/SuperSecretUpdate /path/to/server/dlc/
+tstodlc --platform ios --version 4.70.0 --tier 100 --lang en /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 ![Overwriting package entries part 1.](images/img04.png)
@@ -174,11 +174,11 @@ Bellow is the result from running the previous command:
 Use --tutorial and --initial to place your dlc packages within _TutorialPackages_ and _InitialPackages_ sections in DLCIndex-XXXX.zip.
 
 ```shell
-tstodlc --initial /path/to/SuperSecretUpdate /path/to/server/dlc/
+tstodlc --initial /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 ```shell
-tstodlc --tutorial /path/to/SuperSecretUpdate /path/to/server/dlc/
+tstodlc --tutorial /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 ## Priority
@@ -194,7 +194,7 @@ So if for example you know that mybuilding.rgb has associated with it a value of
 you can use the following command to have the game use your mybuilding.rgb file:
 
 ```shell
-tstodlc --priority 2601 /path/to/SuperSecretUpdate /path/to/server/dlc/
+tstodlc --priority 2601 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 Any value greater than 2600 would have effect in this case. Beware that these priority values are defined in the 0 file of a dlc component,
@@ -205,13 +205,19 @@ will all get the same priority value of 2601 as a consequence of the execution o
 Two more things to consider. One, if not specified default priority value used during dlc installation is 1.
 Two, every time you specify --priority tstodlc will reinstall your dlcs, no matter if any files have been changed or not.
 This is a way to guarantee you are able to update priority values from dlcs that already have been installed.
+Also, if you accidentally delete DLCIndex-SuperSecretUpdate.xml file, use --priority to recreate it (if you're unsure about the value
+use the default one):
+
+```shell
+tstodlc --priority 1 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+```
 
 ## Unzip
 
 tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --unzip argument. This might be useful for editing apk and ipa internal files.
 
 ```shell
-tstodlc --unzip /path/to/SuperSecretUpdate /path/to/server/dlc/
+tstodlc --unzip /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 This will copy each dlc component folder over the destination.
