@@ -189,7 +189,7 @@ def WriteServerTree(server_index, server_tree):
         with open(server_index_xml, "wb") as xml_file:
             server_tree.write(xml_file)
             zip_file = server_index
-            with ZipFile(zip_file, "w", ZIP_DEFLATED) as zip:
+            with ZipFile(zip_file, "w", ZIP_DEFLATED, strict_timestamps=False) as zip:
                 zip.write(server_index_xml, arcname=server_index_xml.name)
 
 

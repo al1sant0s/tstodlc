@@ -287,7 +287,9 @@ def main():
                             continue
 
                         # Zip all files into file_1.
-                        with ZipFile(file_1, "w", ZIP_DEFLATED) as zip:
+                        with ZipFile(
+                            file_1, "w", ZIP_DEFLATED, strict_timestamps=False
+                        ) as zip:
                             for file in files:
                                 zip.write(file, arcname=file.name)
 
@@ -395,7 +397,9 @@ def main():
                             pass
                         else:
                             zip_file = Path(subtarget_dir, f"{subdirectory.name}.zip")
-                            with ZipFile(zip_file, "w", ZIP_DEFLATED) as zip:
+                            with ZipFile(
+                                zip_file, "w", ZIP_DEFLATED, strict_timestamps=False
+                            ) as zip:
                                 for file in files:
                                     zip.write(file, arcname=file.name)
 
