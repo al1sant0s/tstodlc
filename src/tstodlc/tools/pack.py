@@ -406,7 +406,7 @@ def main():
                             filename = (
                                 str(
                                     Path(subtarget_dir.name, f"{subdirectory.name}")
-                                ).replace(os.sep, ":", count=1)
+                                ).replace(os.sep, ":")
                                 + ".zip"
                             )
 
