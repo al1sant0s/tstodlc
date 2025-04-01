@@ -128,7 +128,7 @@ def UpdatePackageEntry(
         (
             pkg.set(
                 "type",
-                GetItemfromDict(pkg.attrib, "ptype", ""),
+                GetItemfromDict(pkg.attrib, "type", ""),
             ),
         )
         pkg.set(
