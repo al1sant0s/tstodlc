@@ -13,6 +13,18 @@ download them once you log into your server.
 * update only files that have been changed to avoid repeated long installation times;
 * auto update server index files to include or remove packages;
 
+**Table of contents**
+* [Installation](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installation)
+* [Basic usage](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#basic-usage)
+* [Introduction](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#introduction)
+* [Updating package entries](https://github.com/al1sant0s/tstodlc#updating-package-entries)
+* [Specifying some predefined values for package entries](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#specifying-some-predefined-values-for-package-entries)
+* [Tutorial and Initial Packages](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#tutorial-and-initial-packages)
+* [Priority](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#priority)
+* [Unzip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#unzip)
+* [Uninstalling dlcs](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#uninstalling-dlcs)
+* [Installing multiple dlcs at once](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installing-multiple-dlcs-at-once)
+
 ## Installation
 
 First, make sure you have [**python**](https://www.python.org/downloads/)
