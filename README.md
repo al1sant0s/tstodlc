@@ -17,7 +17,7 @@ download them once you log into your server.
 * [Installation](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installation)
 * [Basic usage](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#basic-usage)
 * [Introduction](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#introduction)
-* [Updating package entries](https://github.com/al1sant0s/tstodlc#updating-package-entries)
+* [Updating package entries](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#updating-package-entries)
 * [Specifying some predefined values for package entries](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#specifying-some-predefined-values-for-package-entries)
 * [Tutorial and Initial Packages](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#tutorial-and-initial-packages)
 * [Priority](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#priority)
