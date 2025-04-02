@@ -81,6 +81,7 @@ def main():
     )
 
     parser.add_argument(
+        "-p",
         "--priority",
         help="""
         Priority value!
@@ -92,18 +93,21 @@ def main():
     )
 
     parser.add_argument(
+        "-i",
         "--index_only",
         help="Update DLCIndex-XXXX.xml and server DLCIndex-XXXX.xml only without patching the files again.",
         action="store_true",
     )
 
     parser.add_argument(
+        "-u",
         "--unzip",
         help="Do not zip the subfolders when installing the dlc. Useful for editing files from the apk.",
         action="store_true",
     )
 
     parser.add_argument(
+        "-c",
         "--clean",
         help="""
         Remove non existing packages from server DLCIndex-XXXX.xml.
@@ -111,7 +115,7 @@ def main():
 
         Suggestion of usage:
 
-        tstodlc --clean . /path/to/server_dlc_directory
+        tstodlc -c . /path/to/server_dlc_directory
         """,
         action="store_true",
     )
