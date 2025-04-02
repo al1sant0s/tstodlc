@@ -4,7 +4,6 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from colorama import Fore, Style
-
 from tstodlc.tools.progress import colorprint
 
 
@@ -15,12 +14,12 @@ def GetItemfromDict(dic, key, default):
         return default
 
 
-def GetSubElementAttributes(root, subelement):
+def GetSubElementAttributes(root, subelement, default=dict()):
     subelement = root.find(subelement)
     if subelement is not None:
         return subelement.attrib
     else:
-        return dict()
+        return default
 
 
 def SearchPackages(root, filename):
@@ -136,25 +135,42 @@ def UpdatePackageEntry(
             GetItemfromDict(pkg.attrib, "ignore", "false"),
         )
 
+        # Help with subelements setup.
+        def SetValAttributes(value, fallback):
+            if value is not None:
+                return {"val": value}
+            else:
+                return fallback
+
         subelements = {
-            "LocalDir": {"name": "dlc"}
-            if pkg.find("LocalDir") is None
-            else GetSubElementAttributes(pkg, "LocalDir"),
-            "FileSize": {"val": filesize},
-            "UncompressedFileSize": {"val": unc_filesize},
-            "IndexFileCRC": {"val": index_crc},
-            "IndexFileSig": {"val": "You should patch the APK/IPA to bypass this!"}
-            if pkg.find("IndexFileSig") is None
-            else GetSubElementAttributes(pkg, "IndexFileSig"),
-            "Version": {"val": "1"}
-            if pkg.find("Version") is None
-            else GetSubElementAttributes(pkg, "Version"),
-            "FileName": {"val": filename},
-            "Language": {"val": language}
-            if language is not None
-            else GetSubElementAttributes(pkg, "Language")
-            if pkg.find("Language") is not None
-            else {"val": "all"},
+            "LocalDir": GetSubElementAttributes(pkg, "LocalDir", {"name": "dlc"}),
+            "FileSize": SetValAttributes(
+                filesize,
+                GetSubElementAttributes(pkg, "FileSize", {"val": "REINSTALL DLC!"}),
+            ),
+            "UncompressedFileSize": SetValAttributes(
+                unc_filesize,
+                GetSubElementAttributes(
+                    pkg, "UncompressedFileSize", {"val": "REINSTALL DLC!"}
+                ),
+            ),
+            "IndexFileCRC": SetValAttributes(
+                index_crc,
+                GetSubElementAttributes(pkg, "IndexFileCRC", {"val": "REINSTALL DLC!"}),
+            ),
+            "IndexFileSig": GetSubElementAttributes(
+                pkg,
+                "IndexFileSig",
+                {"val": "You should patch the APK/IPA to bypass this!"},
+            ),
+            "Version": GetSubElementAttributes(pkg, "Version", {"val": "1"}),
+            "FileName": SetValAttributes(
+                filename,
+                GetSubElementAttributes(pkg, "FileName", {"val": "REINSTALL DLC!"}),
+            ),
+            "Language": SetValAttributes(
+                language, GetSubElementAttributes(pkg, "Language", {"val": "all"})
+            ),
         }
 
         for key, value in subelements.items():

@@ -8,6 +8,8 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from colorama import Fore, Style, init
 from tstodlc.tools.index import (
+    GetItemfromDict,
+    GetSubElementAttributes,
     RemoveDeadPackages,
     UpdatePackageEntry,
     GetIndexTree,
@@ -224,7 +226,9 @@ def main():
 
             # Start of DLCIndex file.
             dlc_index_file = Path(directory, f"DLCIndex-{subtarget_dir.name}.xml")
+            force_install = not dlc_index_file.exists()
 
+            # Get tree.
             tree = GetIndexTree(dlc_index_file, "DlcIndex")
             root = tree.getroot()
             root_list = [root]
@@ -234,12 +238,14 @@ def main():
                 root_list.append(root.find("InitialPackages"))
             elif args.initial is True:
                 root_list.append(ET.SubElement(root, "InitialPackages"))
+                force_install = True
 
             # Create TutorialPackages tag.
             if root.find("TutorialPackages") is not None:
                 root_list.append(root.find("TutorialPackages"))
             elif args.tutorial is True:
                 root_list.append(ET.SubElement(root, "TutorialPackages"))
+                force_install = True
 
             if args.index_only is False:
                 for subdirectory in (
@@ -248,12 +254,19 @@ def main():
                     if subdirectory.is_dir() is True
                 ):
                     # Only install subdirectory if it has changed it in destination subdirectory or --priority has been set.
+                    # Also, force install if --initial or --tutorial are set for the first time.
                     subpath = Path(
                         subtarget_dir,
                         subdirectory.name + ("" if args.unzip is True else ".zip"),
                     )
+
+                    filename = str(subpath.relative_to(subpath.parent.parent)).replace(
+                        os.sep, ":"
+                    )
+
                     if (
-                        subpath.exists() is True
+                        force_install is False
+                        and subpath.exists() is True
                         and args.priority is None
                         and subdirectory.stat().st_mtime_ns < subpath.stat().st_mtime_ns
                     ):
@@ -269,6 +282,20 @@ def main():
                             ),
                             "",
                         )
+
+                        # Update index options.
+                        for root in root_list:
+                            UpdatePackageEntry(
+                                root,
+                                args.platform,
+                                args.version,
+                                args.tier,
+                                None,
+                                None,
+                                None,
+                                filename,
+                                args.language,
+                            )
 
                         continue
 
@@ -357,11 +384,13 @@ def main():
                                 # If two files define the same filenames, the file with the bigger value associated
                                 # with it within 0 file will take precedence on usage by the game.
                                 # Audios, textpools, gamescripts and non graphical elements usually utilizes 0x0001.
-                                f0.write(
-                                    b"\x00\x01"
+                                priority = (
+                                    int(GetItemfromDict(root.attrib, "priority", "1"))
                                     if args.priority is None
-                                    else args.priority.to_bytes(length=2)
+                                    else args.priority
                                 )
+                                f0.write(priority.to_bytes(length=2))
+                                root.set("priority", str(priority))
 
                                 # Unknown but doesn't seem to change between files.
                                 f0.write(b"\x00\x00")
@@ -410,13 +439,6 @@ def main():
                             # Complete file 0 crc32.
                             with open(file_0, "rb") as f0:
                                 file_0_crc32 = zlib.crc32(f0.read()) & 0xFFFFFFFF
-
-                            filename = (
-                                str(
-                                    Path(subtarget_dir.name, f"{subdirectory.name}")
-                                ).replace(os.sep, ":")
-                                + ".zip"
-                            )
 
                             # Add/Update Package in DLCIndex.xml.
                             for root in root_list:
