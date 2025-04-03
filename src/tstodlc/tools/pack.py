@@ -413,7 +413,11 @@ def main():
                                 # with it within 0 file will take precedence on usage by the game.
                                 # Audios, textpools, gamescripts and non graphical elements usually utilizes 0x0001.
                                 priority = (
-                                    int(GetItemfromDict(root.attrib, "priority", "1"))
+                                    int(
+                                        GetItemfromDict(
+                                            root_list[0].attrib, "priority", "1"
+                                        )
+                                    )
                                     if args.priority is None
                                     else args.priority
                                 )
