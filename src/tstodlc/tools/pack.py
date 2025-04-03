@@ -253,17 +253,25 @@ def main():
                     for subdirectory in directory.glob("*")
                     if subdirectory.is_dir() is True
                 ):
-                    # Only install subdirectory if it has changed it in destination subdirectory or --priority has been set.
-                    # Also, force install if --initial or --tutorial are set for the first time.
-                    subpath = Path(
-                        subtarget_dir,
-                        subdirectory.name + ("" if args.unzip is True else ".zip"),
+                    # Get first subpath it can find and filename.
+                    subpath = list(
+                        subtarget_dir.glob(
+                            f"{subdirectory.name}*{"" if args.unzip is True else ".zip"}"
+                        )
                     )
+                    if len(subpath) > 0:
+                        subpath = subpath[0]
+                    else:
+                        subpath = Path(
+                            subdirectory.name + ("" if args.unzip is True else ".zip")
+                        )
 
                     filename = str(subpath.relative_to(subpath.parent.parent)).replace(
                         os.sep, ":"
                     )
 
+                    # Only install subdirectory if it has changed or --priority has been set.
+                    # Also, force install if --initial or --tutorial are set for the first time.
                     if (
                         force_install is False
                         and subpath.exists() is True
@@ -284,20 +292,40 @@ def main():
                         )
 
                         # Update index options.
-                        for root in root_list:
-                            UpdatePackageEntry(
-                                root,
-                                args.platform,
-                                args.version,
-                                args.tier,
-                                None,
-                                None,
-                                None,
-                                filename,
-                                args.language,
-                            )
+                        if args.unzip is False:
+                            for root in root_list:
+                                UpdatePackageEntry(
+                                    root,
+                                    args.platform,
+                                    args.version,
+                                    args.tier,
+                                    None,
+                                    None,
+                                    None,
+                                    filename,
+                                    filename,
+                                    args.language,
+                                )
 
                         continue
+
+                    # Get revision number to create a new revision and replace the previous one.
+                    revision = subpath.stem.rsplit("-rv", maxsplit=1)[-1]
+                    revision = int(revision) + 1 if revision.isdigit() is True else 1
+
+                    newsubpath = Path(
+                        subtarget_dir,
+                        subdirectory.name
+                        + f"-rv{revision:04d}"
+                        + ("" if args.unzip is True else ".zip"),
+                    )
+                    newfilename = str(
+                        newsubpath.relative_to(newsubpath.parent.parent)
+                    ).replace(os.sep, ":")
+
+                    # Remove old zip file with previous revision.
+                    if args.unzip is False and subpath.exists() is True:
+                        os.remove(subpath)
 
                     with tempfile.TemporaryDirectory() as tempdir:
                         # Main files.
@@ -390,7 +418,7 @@ def main():
                                     else args.priority
                                 )
                                 f0.write(priority.to_bytes(length=2))
-                                root.set("priority", str(priority))
+                                root_list[0].set("priority", str(priority))
 
                                 # Unknown but doesn't seem to change between files.
                                 f0.write(b"\x00\x00")
@@ -429,7 +457,7 @@ def main():
                             )
                             pass
                         else:
-                            zip_file = Path(subtarget_dir, f"{subdirectory.name}.zip")
+                            zip_file = newsubpath
                             with ZipFile(
                                 zip_file, "w", ZIP_DEFLATED, strict_timestamps=False
                             ) as zip:
@@ -451,6 +479,7 @@ def main():
                                     str(file_1.stat().st_size // 1000),
                                     str(file_0_crc32),
                                     filename,
+                                    newfilename,
                                     args.language,
                                 )
 
@@ -463,7 +492,7 @@ def main():
                                     total,
                                     Style.BRIGHT
                                     + Fore.YELLOW
-                                    + f"- Added file: {subdirectory}.zip\n"
+                                    + f"- Added file: {newsubpath.relative_to(newsubpath.parent.parent)}\n"
                                     + Style.RESET_ALL,
                                 ),
                                 "",

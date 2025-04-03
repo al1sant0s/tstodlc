@@ -26,8 +26,10 @@ def SearchPackages(root, filename):
     return [
         package
         for package in root.findall("Package")
-        if GetItemfromDict(GetSubElementAttributes(package, "FileName"), "val", None)
-        == filename
+        if Path(
+            GetItemfromDict(GetSubElementAttributes(package, "FileName"), "val", "")
+        ).stem.rsplit("-rv", maxsplit=1)[0]
+        == Path(filename).stem.rsplit("-rv", maxsplit=1)[0]
     ]
 
 
@@ -76,9 +78,10 @@ def UpdatePackageEntry(
     unc_filesize,
     index_crc,
     filename,
+    newfilename,
     language,
 ):
-    # Grab existing packages.
+    # Grab existing packages to update.
     packages = SearchPackages(root, filename)
 
     # Introduce new package if not a single one was found.
@@ -165,7 +168,7 @@ def UpdatePackageEntry(
             ),
             "Version": GetSubElementAttributes(pkg, "Version", {"val": "1"}),
             "FileName": SetValAttributes(
-                filename,
+                newfilename,
                 GetSubElementAttributes(pkg, "FileName", {"val": "REINSTALL DLC!"}),
             ),
             "Language": SetValAttributes(
@@ -237,7 +240,7 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                                 "val",
                                 "",
                             ).split(":", maxsplit=1)[-1]
-                        ).stem
+                        ).stem.rsplit("-rv", maxsplit=1)[0]
                         in directories_names
                     ]
 
@@ -271,6 +274,11 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                                 ),
                                 GetItemfromDict(
                                     GetSubElementAttributes(pkg, "IndexFileCRC"),
+                                    "val",
+                                    "NOT DEFINED!",
+                                ),
+                                GetItemfromDict(
+                                    GetSubElementAttributes(pkg, "FileName"),
                                     "val",
                                     "NOT DEFINED!",
                                 ),
