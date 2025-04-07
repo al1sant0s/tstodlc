@@ -25,6 +25,7 @@ download them once you log into your server.
 * [Unzip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#unzip)
 * [Uninstalling dlcs](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#uninstalling-dlcs)
 * [Installing multiple dlcs at once](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installing-multiple-dlcs-at-once)
+* [Short options](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#short-options)
 
 ## Installation
 
@@ -161,7 +162,7 @@ tstodlc --index_only /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 Whatever is specified in DLCIndex-SuperSecretUpdate.xml will be written onto DLCIndex-XXXX.zip.
 
 The **--index_only** argument here is optional. It will tell tstodlc to just update DLCIndex-XXXX.zip
-file and not reinstall any dlcs again. If --index_only (-i) was not specified, tstodlc
+file and not reinstall any dlcs again. If --index_only was not specified, tstodlc
 **would still check** if dlc files have been changed since last usage and only then it would reinstall
 the changed dlc components.  Regardless, DLCIndex-XXXX.zip file would still be updated to include anything new
 from DLCIndex-SuperSecretUpdate.xml.
@@ -201,7 +202,7 @@ tstodlc --tutorial /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 If your dlcs happen to define files with the same names as other already existing dlcs, the game will have to choose one of them to use. For instance, suppose your dlc defines a file called mybuilding.rgb
 and this file is already defined by another existing dlc in the server dlc repository.
 
-You can force the game to use the files from your dlc by specifying a priority positive number with --priority (-p).
+You can force the game to use the files from your dlc by specifying a priority positive number with --priority.
 This only works if the value you give to --priority is greater than the value associated with the other file in the other dlc.
 These values are defined in the 0 files from each dlc component.
 
@@ -209,7 +210,7 @@ So if for example you know that mybuilding.rgb has associated with it a value of
 you can use the following command to have the game use your mybuilding.rgb file:
 
 ```shell
-tstodlc -p 2601 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+tstodlc --priority 2601 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 Any value greater than 2600 would have effect in this case. Beware that these priority values are defined in the 0 file of a dlc component,
@@ -223,22 +224,22 @@ This is a way to guarantee you are able to update priority values from dlcs that
 Bellow is a command to update priority value to 500.
 
 ```shell
-tstodlc -p 500 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+tstodlc --priority 500 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 ## Unzip
 
-tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --unzip (-u) argument. This might be useful for editing apk and ipa internal files.
+tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --unzip argument. This might be useful for editing apk and ipa internal files.
 
 ```shell
-tstodlc -u /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+tstodlc --unzip /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 This will copy each dlc component folder over the destination.
 
 ## Uninstalling dlcs
 
-Uninstalling dlcs from the server dlc repository is as easy as installing them and it's done using the --clean (-c) argument.
+Uninstalling dlcs from the server dlc repository is as easy as installing them and it's done using the --clean argument.
 First, either remove (move it, rename it or delete it) the entire dlc directory under the server
 dlc repository or some of its dlc components (the zip files inside the folders). After that run the following command  to update the server DLCIndex-XXXX.zip file:
 
@@ -263,3 +264,24 @@ tstodlc /path/to/dlc01/ /path/to/dlc02/ path/to/dlc03/ /path/to/dlcN/ /path/to/s
 The first N directories are the dlcs you want to install and the last one as usual is where they will be installed.
 After the command is executed, under each /path/to/dlcXX/ an index file will be created so you can edit their correspondent packages entries.
 All previous options discussed earlier work here as well.
+
+## Short options
+
+Here is a list of some options with their correspondent short options.
+
+* --priority [-p]
+ ```shell
+tstodlc -p 2601 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+```
+* --index_only [-i]
+```shell
+tstodlc -i /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+```
+* --unzip [-u]
+```shell
+tstodlc -u /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+```
+* --clean [-c]
+```shell
+tstodlc -c . /path/to/server/dlc/
+```
