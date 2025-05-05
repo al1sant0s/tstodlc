@@ -95,6 +95,17 @@ def main():
     )
 
     parser.add_argument(
+        "-rv",
+        "--revision",
+        help="""
+        Revision value!
+        This allows you to force an specific revision number to the dlc components zip files.
+        Useful to make your changes match or be ahead of an external dlc server or another dlc mirror.
+        """,
+        type=int,
+    )
+
+    parser.add_argument(
         "-i",
         "--index_only",
         help="Update DLCIndex-XXXX.xml and server DLCIndex-XXXX.xml only without patching the files again.",
@@ -310,8 +321,12 @@ def main():
                         continue
 
                     # Get revision number to create a new revision and replace the previous one.
-                    revision = subpath.stem.rsplit("-rv", maxsplit=1)[-1]
-                    revision = int(revision) + 1 if revision.isdigit() is True else 1
+                    # Only get revision number if user has not specified one.
+                    if args.revision is None:
+                        revision = subpath.stem.rsplit("-rv", maxsplit=1)[-1]
+                        revision = int(revision) + 1 if revision.isdigit() is True else 1
+                    else:
+                        revision = args.revision
 
                     newsubpath = Path(
                         subtarget_dir,
