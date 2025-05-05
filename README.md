@@ -25,6 +25,7 @@ download them once you log into your server.
 * [Unzip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#unzip)
 * [Uninstalling dlcs](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#uninstalling-dlcs)
 * [Installing multiple dlcs at once](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installing-multiple-dlcs-at-once)
+* [Revision system](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#revision-system)
 * [Short options](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#short-options)
 
 ## Installation
@@ -265,6 +266,21 @@ The first N directories are the dlcs you want to install and the last one as usu
 After the command is executed, under each /path/to/dlcXX/ an index file will be created so you can edit their correspondent packages entries.
 All previous options discussed earlier work here as well.
 
+## Revision system
+
+You might have noticed that when you install a dlc into your server dlc repository, the dlc components (zip files) receive a rv-000x.zip to their
+names. This is the revision system and it behaves as some kind of version control whereas 000x corresponds to the number of that specific revision.
+The purpose of this system is to allow one to update dlcs that are already installed on one's device. For example, suppose you have installed the full
+game and have an internal file installed called gamescripts-rv0005.zip. If the server owner updates the gamescripts from the server repository to gamescripts-rv0006.zip
+or to any revision number above the current revision number (5), when you reconnect to the server, the game will download the newest version and it will replace
+the current one. So essentially, gamescripts-rv0005.zip will be replaced with gamescripts-rv0006.zip, effectively updating the already installed dlc.
+
+When installing dlcs, tstodlc will auto detect the current revision number of a specific dlc component and install it again with one number above it. However, you can force a specific revision number
+to be used during installation with the revision argument. For instance, the code bellow will install a custom dlc and force it to use the fifth revision for the installation:
+```shell
+tstodlc --revision 5 Custom/ ~/Simpsons/dlc/
+```
+
 ## Short options
 
 Here is a list of some options with their correspondent short options.
@@ -273,6 +289,11 @@ Here is a list of some options with their correspondent short options.
  ```shell
 tstodlc -p 2601 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
+* --revision [-rv]
+ ```shell
+tstodlc -rv 12 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+```
+
 * --index_only [-i]
 ```shell
 tstodlc -i /path/to/SuperSecretUpdate/ /path/to/server/dlc/
