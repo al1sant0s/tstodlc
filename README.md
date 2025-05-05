@@ -281,6 +281,11 @@ to be used during installation with the revision argument. For instance, the cod
 tstodlc --revision 5 Custom/ ~/Simpsons/dlc/
 ```
 
+This allows you to force a specific revision number onto the dlc components zip files.
+Useful to make your changes match or be ahead of an external dlc server or another dlc mirror so when you push
+your dlc update to the server dlc repository, the greater revision number will indicate those files are newer and it
+will enable users to download those new updates.
+
 ## Short options
 
 Here is a list of some options with their correspondent short options.
