@@ -351,7 +351,7 @@ def main():
 
                         # Get files in current directory.
                         files = [
-                            i for i in subdirectory.glob("*") if i.is_dir() is False
+                            i for i in subdirectory.glob("**/*")
                         ]
 
                         # No files at all. Do nothing!
@@ -367,7 +367,7 @@ def main():
                             file_1, "w", ZIP_DEFLATED, strict_timestamps=False
                         ) as zip:
                             for file in files:
-                                zip.write(file, arcname=file.name)
+                                zip.write(file,arcname=file.relative_to(subdirectory))
 
                         with open(file_0, "wb") as f0:
                             # Write 0 file signature.
