@@ -268,7 +268,7 @@ All previous options discussed earlier work here as well.
 
 ## Revision system
 
-You might have noticed that when you install a dlc into your server dlc repository, the dlc components (zip files) receive something like r-123456789.zip to their
+You might have noticed that when you install a dlc into your server dlc repository, the dlc components (zip files) receive something like -r123456789.zip to their
 names. This is the revision system and it behaves as some kind of version control whereas 123456789 corresponds to the number of that specific revision (epoch time).
 The purpose of this system is to allow one to update dlcs that are already installed on one's device.
 
