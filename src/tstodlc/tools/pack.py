@@ -538,7 +538,7 @@ def main():
 
                 colorprint(
                     Style.BRIGHT + Fore.GREEN,
-                    f"\n\n-> Sucessfully instaled files listed above in {subtarget_dir.relative_to(subtarget_dir.parent.parent)}!",
+                    f"\n\n-> Sucessfully installed files listed above in {subtarget_dir.relative_to(subtarget_dir.parent.parent)}!",
                 )
 
             if args.nozip is False:
