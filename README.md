@@ -22,7 +22,7 @@ download them once you log into your server.
 * [Specifying some predefined values for package entries](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#specifying-some-predefined-values-for-package-entries)
 * [Tutorial and Initial Packages](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#tutorial-and-initial-packages)
 * [Priority](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#priority)
-* [No zip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#nozip)
+* [No zip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#no-zip)
 * [Uninstalling dlcs](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#uninstalling-dlcs)
 * [Installing multiple dlcs at once](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installing-multiple-dlcs-at-once)
 * [Revision system](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#revision-system)
@@ -268,24 +268,15 @@ All previous options discussed earlier work here as well.
 
 ## Revision system
 
-You might have noticed that when you install a dlc into your server dlc repository, the dlc components (zip files) receive a rv-000x.zip to their
-names. This is the revision system and it behaves as some kind of version control whereas 000x corresponds to the number of that specific revision.
-The purpose of this system is to allow one to update dlcs that are already installed on one's device. For example, suppose you have installed the full
-game and have an internal file installed called gamescripts-rv0005.zip. If the server owner updates the gamescripts from the server repository to gamescripts-rv0006.zip
-or to any revision number above the current revision number (5), when you reconnect to the server, the game will download the newest version and it will replace
-the current one. So essentially, gamescripts-rv0005.zip will be replaced with gamescripts-rv0006.zip, effectively updating the already installed dlc.
+You might have noticed that when you install a dlc into your server dlc repository, the dlc components (zip files) receive something like r-123456789.zip to their
+names. This is the revision system and it behaves as some kind of version control whereas 123456789 corresponds to the number of that specific revision (epoch time).
+The purpose of this system is to allow one to update dlcs that are already installed on one's device.
 
-When installing dlcs, tstodlc will auto detect the current revision number of a specific dlc component and install it again with one number above it. However, you can force a specific revision number
-to be used during installation with the revision argument. For instance, the code bellow will install a custom dlc and force it to use the fifth revision for the installation:
+You can disable the revision system with --norevision.
 
-```shell
-tstodlc --revision 5 Custom/ ~/Simpsons/dlc/
+ ```shell
+tstodlc --norevision /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
-
-This allows you to force a specific revision number onto the dlc components zip files.
-Useful to make your changes match or be ahead of an external dlc server or another dlc mirror so when you push
-your dlc update to the server dlc repository, the greater revision number will indicate those files are newer and it
-will enable users to download those new updates.
 
 ## Short options
 
@@ -295,12 +286,6 @@ Here is a list of some options with their correspondent short options.
 
  ```shell
 tstodlc -p 2601 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
-```
-
-* --revision [-rv]
-
- ```shell
-tstodlc -rv 12 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 * --index_only [-i]
