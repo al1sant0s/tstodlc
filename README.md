@@ -22,7 +22,7 @@ download them once you log into your server.
 * [Specifying some predefined values for package entries](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#specifying-some-predefined-values-for-package-entries)
 * [Tutorial and Initial Packages](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#tutorial-and-initial-packages)
 * [Priority](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#priority)
-* [Unzip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#unzip)
+* [No zip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#nozip)
 * [Uninstalling dlcs](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#uninstalling-dlcs)
 * [Installing multiple dlcs at once](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installing-multiple-dlcs-at-once)
 * [Revision system](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#revision-system)
@@ -228,9 +228,9 @@ Bellow is a command to update priority value to 500.
 tstodlc --priority 500 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
-## Unzip
+## No zip
 
-tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --unzip argument. This might be useful for editing apk and ipa internal files.
+tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --nozip argument. This might be useful for editing apk and ipa internal files.
 
 ```shell
 tstodlc --unzip /path/to/SuperSecretUpdate/ /path/to/server/dlc/
@@ -277,6 +277,7 @@ the current one. So essentially, gamescripts-rv0005.zip will be replaced with ga
 
 When installing dlcs, tstodlc will auto detect the current revision number of a specific dlc component and install it again with one number above it. However, you can force a specific revision number
 to be used during installation with the revision argument. For instance, the code bellow will install a custom dlc and force it to use the fifth revision for the installation:
+
 ```shell
 tstodlc --revision 5 Custom/ ~/Simpsons/dlc/
 ```
@@ -291,23 +292,31 @@ will enable users to download those new updates.
 Here is a list of some options with their correspondent short options.
 
 * --priority [-p]
+
  ```shell
 tstodlc -p 2601 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
+
 * --revision [-rv]
+
  ```shell
 tstodlc -rv 12 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 * --index_only [-i]
+
 ```shell
 tstodlc -i /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
-* --unzip [-u]
+
+* --nozip [-n]
+
 ```shell
-tstodlc -u /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+tstodlc -n /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
+
 * --clean [-c]
+
 ```shell
 tstodlc -c . /path/to/server/dlc/
 ```

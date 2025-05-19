@@ -28,8 +28,8 @@ def SearchPackages(root, filename):
         for package in root.findall("Package")
         if Path(
             GetItemfromDict(GetSubElementAttributes(package, "FileName"), "val", "")
-        ).stem.rsplit("-rv", maxsplit=1)[0]
-        == Path(filename).stem.rsplit("-rv", maxsplit=1)[0]
+        ).stem.rsplit("-r", maxsplit=1)[0]
+        == Path(filename).stem.rsplit("-r", maxsplit=1)[0]
     ]
 
 
@@ -71,7 +71,9 @@ def GetIndexTree(index_file, root_tag):
 
 def UpdatePackageEntry(
     root,
+    branch,
     platform,
+    unzip,
     minVersion,
     tier,
     filesize,
@@ -82,27 +84,40 @@ def UpdatePackageEntry(
     language,
 ):
     # Grab existing packages to update.
-    packages = SearchPackages(root, filename)
+    packages = SearchPackages(branch, filename)
+
+    # Get a list of root packages. However, only the first will be considered.
+    root_packages = SearchPackages(root, filename)
 
     # Introduce new package if not a single one was found.
     if len(packages) == 0:
         packages = [ET.Element("Package")]
-        root.insert(0, packages[0])
+        branch.insert(0, packages[0])
 
     # Update packages details.
     for pkg in packages:
+        # Get root package of fall back to local package if root package does not exist.
+        root_package = root_packages[0] if len(root_packages) > 0 else pkg
+
+        # Set package details.
         (
             pkg.set(
                 "platform",
                 platform
                 if platform is not None
-                else GetItemfromDict(pkg.attrib, "platform", "all"),
+                else GetItemfromDict(
+                    pkg.attrib,
+                    "platform",
+                    GetItemfromDict(root_package.attrib, "platform", "all"),
+                ),
             ),
         )
         (
             pkg.set(
                 "unzip",
-                GetItemfromDict(pkg.attrib, "unzip", "false"),
+                "true"
+                if unzip is True
+                else GetItemfromDict(root_package.attrib, "unzip", "false"),
             ),
         )
         (
@@ -110,7 +125,7 @@ def UpdatePackageEntry(
                 "minVersion",
                 minVersion
                 if minVersion is not None
-                else GetItemfromDict(pkg.attrib, "minVersion", "4.69.0"),
+                else GetItemfromDict(root_package.attrib, "minVersion", "4.69.0"),
             ),
         )
         (
@@ -118,24 +133,24 @@ def UpdatePackageEntry(
                 "tier",
                 tier
                 if tier is not None
-                else GetItemfromDict(pkg.attrib, "tier", "all"),
+                else GetItemfromDict(root_package.attrib, "tier", "all"),
             ),
         )
         (
             pkg.set(
                 "xml",
-                GetItemfromDict(pkg.attrib, "xml", ""),
+                GetItemfromDict(root_package.attrib, "xml", ""),
             ),
         )
         (
             pkg.set(
                 "type",
-                GetItemfromDict(pkg.attrib, "type", ""),
+                GetItemfromDict(root_package.attrib, "type", ""),
             ),
         )
         pkg.set(
             "ignore",
-            GetItemfromDict(pkg.attrib, "ignore", "false"),
+            GetItemfromDict(root_package.attrib, "ignore", "false"),
         )
 
         # Help with subelements setup.
@@ -146,33 +161,42 @@ def UpdatePackageEntry(
                 return fallback
 
         subelements = {
-            "LocalDir": GetSubElementAttributes(pkg, "LocalDir", {"name": "dlc"}),
+            "LocalDir": GetSubElementAttributes(
+                root_package, "LocalDir", {"name": "dlc"}
+            ),
             "FileSize": SetValAttributes(
                 filesize,
-                GetSubElementAttributes(pkg, "FileSize", {"val": "REINSTALL DLC!"}),
+                GetSubElementAttributes(
+                    root_package, "FileSize", {"val": "REINSTALL DLC!"}
+                ),
             ),
             "UncompressedFileSize": SetValAttributes(
                 unc_filesize,
                 GetSubElementAttributes(
-                    pkg, "UncompressedFileSize", {"val": "REINSTALL DLC!"}
+                    root_package, "UncompressedFileSize", {"val": "REINSTALL DLC!"}
                 ),
             ),
             "IndexFileCRC": SetValAttributes(
                 index_crc,
-                GetSubElementAttributes(pkg, "IndexFileCRC", {"val": "REINSTALL DLC!"}),
+                GetSubElementAttributes(
+                    root_package, "IndexFileCRC", {"val": "REINSTALL DLC!"}
+                ),
             ),
             "IndexFileSig": GetSubElementAttributes(
-                pkg,
+                root_package,
                 "IndexFileSig",
                 {"val": "You should patch the APK/IPA to bypass this!"},
             ),
-            "Version": GetSubElementAttributes(pkg, "Version", {"val": "1"}),
+            "Version": GetSubElementAttributes(root_package, "Version", {"val": "1"}),
             "FileName": SetValAttributes(
                 newfilename,
-                GetSubElementAttributes(pkg, "FileName", {"val": "REINSTALL DLC!"}),
+                GetSubElementAttributes(
+                    root_package, "FileName", {"val": "REINSTALL DLC!"}
+                ),
             ),
             "Language": SetValAttributes(
-                language, GetSubElementAttributes(pkg, "Language", {"val": "all"})
+                language,
+                GetSubElementAttributes(root_package, "Language", {"val": "all"}),
             ),
         }
 
@@ -240,7 +264,7 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                                 "val",
                                 "",
                             ).split(":", maxsplit=1)[-1]
-                        ).stem.rsplit("-rv", maxsplit=1)[0]
+                        ).stem.rsplit("-r", maxsplit=1)[0]
                         in directories_names
                     ]
 
@@ -254,45 +278,10 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                                 "NOT DEFINED!",
                             ),
                         )
-                        if len(server_packages) == 0:
-                            UpdatePackageEntry(
-                                server_branch,
-                                pkg.get("platform"),
-                                pkg.get("minVersion"),
-                                pkg.get("tier"),
-                                GetItemfromDict(
-                                    GetSubElementAttributes(pkg, "FileSize"),
-                                    "val",
-                                    "NOT DEFINED!",
-                                ),
-                                GetItemfromDict(
-                                    GetSubElementAttributes(
-                                        pkg, "UncompressedFileSize"
-                                    ),
-                                    "val",
-                                    "NOT DEFINED!",
-                                ),
-                                GetItemfromDict(
-                                    GetSubElementAttributes(pkg, "IndexFileCRC"),
-                                    "val",
-                                    "NOT DEFINED!",
-                                ),
-                                GetItemfromDict(
-                                    GetSubElementAttributes(pkg, "FileName"),
-                                    "val",
-                                    "NOT DEFINED!",
-                                ),
-                                GetItemfromDict(
-                                    GetSubElementAttributes(pkg, "FileName"),
-                                    "val",
-                                    "NOT DEFINED!",
-                                ),
-                                None,
-                            )
-                        else:
+                        if len(server_packages) > 0:
                             for server_pkg in server_packages:
                                 server_branch.remove(server_pkg)
-                            server_branch.insert(0, pkg)
+                        server_branch.insert(0, pkg)
 
             ET.indent(server_tree, "  ")
             WriteServerTree(server_index, server_tree)

@@ -3,13 +3,13 @@ import zlib
 import tempfile
 import shutil
 import os
+import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from colorama import Fore, Style, init
 from tstodlc.tools.index import (
     GetItemfromDict,
-    GetSubElementAttributes,
     RemoveDeadPackages,
     UpdatePackageEntry,
     GetIndexTree,
@@ -39,7 +39,13 @@ def write_str_to_file(file_descriptor, str_name):
 
 
 def main():
+    # Init colorama.
     init()
+
+    # Get current epoch time.
+    epoch_time_sec = round(time.time())
+
+    # Parse arguments.
     parser = argparse.ArgumentParser(
         description="""
         This is a simple script for packaging files for usage with "The Simpsons: Tapped Out" game.
@@ -53,6 +59,12 @@ def main():
     parser.add_argument(
         "--platform",
         help="Specify platform attribute for package entries.",
+    )
+
+    parser.add_argument(
+        "--unzip",
+        help="Set unzip attribute for package entries. This will install dlc files at root of dlc folder.",
+        action="store_true",
     )
 
     parser.add_argument(
@@ -95,16 +107,12 @@ def main():
     )
 
     parser.add_argument(
-        "-rv",
-        "--revision",
+        "--norevision",
         help="""
-        Revision value!
-        This allows you to force a specific revision number onto the dlc components zip files.
-        Useful to make your changes match or be ahead of an external dlc server or another dlc mirror so when you push
-        your dlc update to the server dlc repository, the greater revision number will indicate those files are newer and it
-        will enable users to download those new updates.
+        Do not use revision value!
+        Preserve original name of subdirectories instead.
         """,
-        type=int,
+        action="store_true",
     )
 
     parser.add_argument(
@@ -115,9 +123,9 @@ def main():
     )
 
     parser.add_argument(
-        "-u",
-        "--unzip",
-        help="Do not zip the subfolders when installing the dlc. Useful for editing files from the apk.",
+        "-n",
+        "--nozip",
+        help="Do not zip the subfolders when installing the dlc. Useful for editing files from the apk/ipa.",
         action="store_true",
     )
 
@@ -229,8 +237,12 @@ def main():
                 continue
 
             # Subdirectory in dlc.
-            subtarget_dir = Path(target_dir, directory.name)
-            subtarget_dir.mkdir(exist_ok=True)
+            subtarget_dir = (
+                Path(target_dir, directory.name)
+                if args.nozip is False
+                else Path(target_dir)
+            )
+            subtarget_dir.mkdir(parents=True, exist_ok=True)
 
             colorprint(
                 Style.BRIGHT + Fore.LIGHTBLUE_EX,
@@ -269,14 +281,14 @@ def main():
                     # Get first subpath it can find and filename.
                     subpath = list(
                         subtarget_dir.glob(
-                            f"{subdirectory.name}*{"" if args.unzip is True else ".zip"}"
+                            f"{subdirectory.name}*{'' if args.nozip is True else '.zip'}"
                         )
                     )
                     if len(subpath) > 0:
                         subpath = subpath[0]
                     else:
                         subpath = Path(
-                            subdirectory.name + ("" if args.unzip is True else ".zip")
+                            subdirectory.name + ("" if args.nozip is True else ".zip")
                         )
 
                     filename = str(subpath.relative_to(subpath.parent.parent)).replace(
@@ -285,8 +297,10 @@ def main():
 
                     # Only install subdirectory if it has changed or --priority has been set.
                     # Also, force install if --initial or --tutorial are set for the first time.
+                    # Also, force install if --nozip is set.
                     if (
                         force_install is False
+                        and args.nozip is False
                         and subpath.exists() is True
                         and args.priority is None
                         and subdirectory.stat().st_mtime_ns < subpath.stat().st_mtime_ns
@@ -305,11 +319,13 @@ def main():
                         )
 
                         # Update index options.
-                        if args.unzip is False:
+                        if args.nozip is False:
                             for root in root_list:
                                 UpdatePackageEntry(
+                                    root_list[0],
                                     root,
                                     args.platform,
+                                    args.unzip,
                                     args.version,
                                     args.tier,
                                     None,
@@ -323,25 +339,26 @@ def main():
                         continue
 
                     # Get revision number to create a new revision and replace the previous one.
-                    # Only get revision number if user has not specified one.
-                    if args.revision is None:
-                        revision = subpath.stem.rsplit("-rv", maxsplit=1)[-1]
-                        revision = int(revision) + 1 if revision.isdigit() is True else 1
-                    else:
-                        revision = args.revision
+                    if args.norevision is False:
+                        newsubpath = Path(
+                            subtarget_dir,
+                            subdirectory.name
+                            + f"-r{epoch_time_sec}"
+                            + ("" if args.nozip is True else ".zip"),
+                        )
 
-                    newsubpath = Path(
-                        subtarget_dir,
-                        subdirectory.name
-                        + f"-rv{revision:04d}"
-                        + ("" if args.unzip is True else ".zip"),
-                    )
+                    else:
+                        newsubpath = Path(
+                            subtarget_dir,
+                            subdirectory.name + ("" if args.nozip is True else ".zip"),
+                        )
+
                     newfilename = str(
                         newsubpath.relative_to(newsubpath.parent.parent)
                     ).replace(os.sep, ":")
 
                     # Remove old zip file with previous revision.
-                    if args.unzip is False and subpath.exists() is True:
+                    if args.nozip is False and subpath.exists() is True:
                         os.remove(subpath)
 
                     with tempfile.TemporaryDirectory() as tempdir:
@@ -350,9 +367,7 @@ def main():
                         file_1 = Path(tempdir, "1")
 
                         # Get files in current directory.
-                        files = [
-                            i for i in subdirectory.glob("**/*")
-                        ]
+                        files = [i for i in subdirectory.glob("**/*")]
 
                         # No files at all. Do nothing!
                         if len(files) == 0:
@@ -367,7 +382,7 @@ def main():
                             file_1, "w", ZIP_DEFLATED, strict_timestamps=False
                         ) as zip:
                             for file in files:
-                                zip.write(file,arcname=file.relative_to(subdirectory))
+                                zip.write(file, arcname=file.relative_to(subdirectory))
 
                         with open(file_0, "wb") as f0:
                             # Write 0 file signature.
@@ -455,7 +470,7 @@ def main():
                             f0.write(file_0_crc32.to_bytes(length=4))
 
                         files = [i for i in Path(tempdir).glob("*") if not i.is_dir()]
-                        if args.unzip is True:
+                        if args.nozip is True:
                             pkg_dir = Path(subtarget_dir, subdirectory.name)
                             pkg_dir.mkdir(exist_ok=True)
 
@@ -471,7 +486,7 @@ def main():
                                     total,
                                     Style.BRIGHT
                                     + Fore.YELLOW
-                                    + f"- Added directory: {subdirectory}\n"
+                                    + f"- Added directory: {subdirectory.name if args.nozip is True else subdirectory}\n"
                                     + Style.RESET_ALL,
                                 ),
                                 "",
@@ -492,8 +507,10 @@ def main():
                             # Add/Update Package in DLCIndex.xml.
                             for root in root_list:
                                 UpdatePackageEntry(
+                                    root_list[0],
                                     root,
                                     args.platform,
+                                    args.unzip,
                                     args.version,
                                     args.tier,
                                     str(zip_file.stat().st_size // 1000),
@@ -524,7 +541,7 @@ def main():
                     f"\n\n-> Sucessfully instaled files listed above in {subtarget_dir.relative_to(subtarget_dir.parent.parent)}!",
                 )
 
-            if args.unzip is False:
+            if args.nozip is False:
                 # Write local tree.
                 ET.indent(tree, "  ")
                 with open(
