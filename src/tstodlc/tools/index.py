@@ -27,9 +27,11 @@ def SearchPackages(root, filename):
         package
         for package in root.findall("Package")
         if Path(
-            GetItemfromDict(GetSubElementAttributes(package, "FileName"), "val", "")
+            GetItemfromDict(
+                GetSubElementAttributes(package, "FileName"), "val", ""
+            ).replace(":", os.sep)
         ).stem.rsplit("-r", maxsplit=1)[0]
-        == Path(filename).stem.rsplit("-r", maxsplit=1)[0]
+        == Path(filename.replace(":", os.sep)).stem.rsplit("-r", maxsplit=1)[0]
     ]
 
 

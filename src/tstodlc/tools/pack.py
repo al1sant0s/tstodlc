@@ -281,7 +281,11 @@ def main():
                     # Get first subpath it can find and filename.
                     subpath = list(
                         subtarget_dir.glob(
-                            f"{subdirectory.name}*{'' if args.nozip is True else '.zip'}"
+                            f"{subdirectory.name}.{'' if args.nozip is True else '.zip'}"
+                        )
+                    ) + list(
+                        subtarget_dir.glob(
+                            f"{subdirectory.name}-r*{'' if args.nozip is True else '.zip'}"
                         )
                     )
                     if len(subpath) > 0:
