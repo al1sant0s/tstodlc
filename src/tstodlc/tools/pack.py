@@ -9,7 +9,6 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from colorama import Fore, Style, init
 from tstodlc.tools.index import (
-    GetItemfromDict,
     RemoveDeadPackages,
     UpdatePackageEntry,
     GetIndexTree,
@@ -449,11 +448,7 @@ def main():
                                 # with it within 0 file will take precedence on usage by the game.
                                 # Audios, textpools, gamescripts and non graphical elements usually utilizes 0x0001.
                                 priority = (
-                                    int(
-                                        GetItemfromDict(
-                                            root_list[0].attrib, "priority", "1"
-                                        )
-                                    )
+                                    int(root_list[0].attrib.get("priority", "1"))
                                     if args.priority is None
                                     else args.priority
                                 )

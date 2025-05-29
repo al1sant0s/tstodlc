@@ -7,13 +7,6 @@ from colorama import Fore, Style
 from tstodlc.tools.progress import colorprint
 
 
-def GetItemfromDict(dic, key, default):
-    if key in dic.keys():
-        return dic[key]
-    else:
-        return default
-
-
 def GetSubElementAttributes(root, subelement, default=dict()):
     subelement = root.find(subelement)
     if subelement is not None:
@@ -27,9 +20,9 @@ def SearchPackages(root, filename):
         package
         for package in root.findall("Package")
         if Path(
-            GetItemfromDict(
-                GetSubElementAttributes(package, "FileName"), "val", ""
-            ).replace(":", os.sep)
+            GetSubElementAttributes(package, "FileName")
+            .get("val", "")
+            .replace(":", os.sep)
         ).stem.rsplit("-r", maxsplit=1)[0]
         == Path(filename.replace(":", os.sep)).stem.rsplit("-r", maxsplit=1)[0]
     ]
@@ -107,19 +100,15 @@ def UpdatePackageEntry(
                 "platform",
                 platform
                 if platform is not None
-                else GetItemfromDict(
-                    pkg.attrib,
-                    "platform",
-                    GetItemfromDict(root_package.attrib, "platform", "all"),
+                else pkg.attrib.get(
+                    "platform", root_package.attrib.get("platform", "all")
                 ),
             ),
         )
         (
             pkg.set(
                 "unzip",
-                "true"
-                if unzip is True
-                else GetItemfromDict(root_package.attrib, "unzip", "false"),
+                "true" if unzip is True else root_package.attrib.get("unzip", "false"),
             ),
         )
         (
@@ -127,32 +116,30 @@ def UpdatePackageEntry(
                 "minVersion",
                 minVersion
                 if minVersion is not None
-                else GetItemfromDict(root_package.attrib, "minVersion", "4.69.0"),
+                else root_package.attrib.get("minVersion", "4.69.0"),
             ),
         )
         (
             pkg.set(
                 "tier",
-                tier
-                if tier is not None
-                else GetItemfromDict(root_package.attrib, "tier", "all"),
+                tier if tier is not None else root_package.attrib.get("tier", "all"),
             ),
         )
         (
             pkg.set(
                 "xml",
-                GetItemfromDict(root_package.attrib, "xml", ""),
+                root_package.attrib.get("xml", ""),
             ),
         )
         (
             pkg.set(
                 "type",
-                GetItemfromDict(root_package.attrib, "type", ""),
+                root_package.attrib.get("type", ""),
             ),
         )
         pkg.set(
             "ignore",
-            GetItemfromDict(root_package.attrib, "ignore", "false"),
+            root_package.attrib.get("ignore", "false"),
         )
 
         # Help with subelements setup.
@@ -261,11 +248,12 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                         package
                         for package in tree_branch.findall("Package")
                         if Path(
-                            GetItemfromDict(
-                                GetSubElementAttributes(package, "FileName"),
+                            GetSubElementAttributes(package, "FileName")
+                            .get(
                                 "val",
                                 "",
-                            ).split(":", maxsplit=1)[-1]
+                            )
+                            .split(":", maxsplit=1)[-1]
                         ).stem.rsplit("-r", maxsplit=1)[0]
                         in directories_names
                     ]
@@ -274,8 +262,7 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                     for pkg in local_packages:
                         server_packages = SearchPackages(
                             server_branch,
-                            GetItemfromDict(
-                                GetSubElementAttributes(pkg, "FileName"),
+                            GetSubElementAttributes(pkg, "FileName").get(
                                 "val",
                                 "NOT DEFINED!",
                             ),
@@ -309,9 +296,7 @@ def RemoveDeadPackages(dlc_root, branches):
                     Style.BRIGHT + Fore.CYAN, f"* Checking <{server_branch.tag}>"
                 )
                 for pkg in server_branch.findall("Package"):
-                    filename = GetItemfromDict(
-                        GetSubElementAttributes(pkg, "FileName"), "val", None
-                    )
+                    filename = GetSubElementAttributes(pkg, "FileName").get("val", None)
                     if filename is not None:
                         filename = filename.replace(":", os.sep)
                         filename = Path(dlc_root, filename)
