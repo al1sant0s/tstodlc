@@ -23,8 +23,9 @@ def SearchPackages(root, filename):
             GetSubElementAttributes(package, "FileName")
             .get("val", "")
             .replace(":", os.sep)
-        ).stem.rsplit("-r", maxsplit=1)[0]
-        == Path(filename.replace(":", os.sep)).stem.rsplit("-r", maxsplit=1)[0]
+            .rsplit("-r", maxsplit=1)[0]
+        )
+        == Path(filename.replace(":", os.sep).rsplit("-r", maxsplit=1)[0])
     ]
 
 
