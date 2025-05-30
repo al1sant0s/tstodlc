@@ -291,12 +291,11 @@ def main():
                         subpath = subpath[0]
                     else:
                         subpath = Path(
-                            subdirectory.name + ("" if args.nozip is True else ".zip")
+                            subtarget_dir,
+                            subdirectory.name + ("" if args.nozip is True else ".zip"),
                         )
 
-                    filename = str(subpath.relative_to(subpath.parent.parent)).replace(
-                        os.sep, ":"
-                    )
+                    filename = str(subpath.relative_to(subpath.parent.parent))
 
                     # Only install subdirectory if it has changed or --priority has been set.
                     # Also, force install if --initial or --tutorial are set for the first time.
@@ -356,9 +355,7 @@ def main():
                             subdirectory.name + ("" if args.nozip is True else ".zip"),
                         )
 
-                    newfilename = str(
-                        newsubpath.relative_to(newsubpath.parent.parent)
-                    ).replace(os.sep, ":")
+                    newfilename = str(newsubpath.relative_to(newsubpath.parent.parent))
 
                     # Remove old zip file with previous revision.
                     if args.nozip is False and subpath.exists() is True:

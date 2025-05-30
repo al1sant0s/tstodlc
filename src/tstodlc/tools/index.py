@@ -16,17 +16,23 @@ def GetSubElementAttributes(root, subelement, default=dict()):
 
 
 def SearchPackages(root, filename):
-    return [
-        package
-        for package in root.findall("Package")
-        if Path(
+    packages = []
+    filename = Path(filename)
+    filename = Path(filename.parent, filename.stem.rsplit("-r", maxsplit=1)[0])
+    for package in root.findall("Package"):
+        package_path = Path(
             GetSubElementAttributes(package, "FileName")
             .get("val", "")
             .replace(":", os.sep)
-            .rsplit("-r", maxsplit=1)[0]
         )
-        == Path(filename.replace(":", os.sep).rsplit("-r", maxsplit=1)[0])
-    ]
+        package_path = Path(
+            package_path.parent, package_path.stem.rsplit("-r", maxsplit=1)[0]
+        )
+
+        if package_path == filename:
+            packages.append(package)
+
+    return packages
 
 
 def GetXmlFromFile(index_file, root_tag):
@@ -179,7 +185,7 @@ def UpdatePackageEntry(
             ),
             "Version": GetSubElementAttributes(root_package, "Version", {"val": "1"}),
             "FileName": SetValAttributes(
-                newfilename,
+                newfilename.replace(os.sep, ":"),
                 GetSubElementAttributes(
                     root_package, "FileName", {"val": "REINSTALL DLC!"}
                 ),
@@ -263,14 +269,15 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                     for pkg in local_packages:
                         server_packages = SearchPackages(
                             server_branch,
-                            GetSubElementAttributes(pkg, "FileName").get(
+                            GetSubElementAttributes(pkg, "FileName")
+                            .get(
                                 "val",
-                                "NOT DEFINED!",
-                            ),
+                                "",
+                            )
+                            .replace(":", os.sep),
                         )
-                        if len(server_packages) > 0:
-                            for server_pkg in server_packages:
-                                server_branch.remove(server_pkg)
+                        for server_pkg in server_packages:
+                            server_branch.remove(server_pkg)
                         server_branch.insert(0, pkg)
 
             ET.indent(server_tree, "  ")
