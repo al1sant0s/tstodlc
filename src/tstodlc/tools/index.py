@@ -17,19 +17,28 @@ def GetSubElementAttributes(root, subelement, default=dict()):
 
 def SearchPackages(root, filename):
     packages = []
-    filename = Path(filename)
-    filename = Path(filename.parent, filename.stem.rsplit("-r", maxsplit=1)[0])
+
+    # Remove file extension, split only if there is actually a number after -r.
+    filepath = Path(filename)
+    filenamesplit = filepath.stem.rsplit("-r", maxsplit=1)
+    filepath = Path(
+        filepath.parent,
+        filenamesplit[0] if filenamesplit[-1].isdigit() else filepath.stem,
+    )
     for package in root.findall("Package"):
         package_path = Path(
             GetSubElementAttributes(package, "FileName")
             .get("val", "")
             .replace(":", os.sep)
         )
+
+        filenamesplit = package_path.stem.rsplit("-r", maxsplit=1)
         package_path = Path(
-            package_path.parent, package_path.stem.rsplit("-r", maxsplit=1)[0]
+            package_path.parent,
+            filenamesplit[0] if filenamesplit[-1].isdigit() else package_path.stem,
         )
 
-        if package_path == filename:
+        if package_path == filepath:
             packages.append(package)
 
     return packages
@@ -253,16 +262,8 @@ def UpdateServerIndex(index_file, dlc_dlc, directories_names, branches):
                     # Grab existing packages.
                     local_packages = [
                         package
-                        for package in tree_branch.findall("Package")
-                        if Path(
-                            GetSubElementAttributes(package, "FileName")
-                            .get(
-                                "val",
-                                "",
-                            )
-                            .split(":", maxsplit=1)[-1]
-                        ).stem.rsplit("-r", maxsplit=1)[0]
-                        in directories_names
+                        for directory in directories_names
+                        for package in SearchPackages(tree_branch, directory)
                     ]
 
                     # Update server packages.

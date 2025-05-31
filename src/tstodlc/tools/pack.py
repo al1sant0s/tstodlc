@@ -162,8 +162,8 @@ def main():
             "\n\n--- PACKING FILES INTO 0 and 1 FILES ---\n",
         )
 
-        # List of input directories.
-        directories = [Path(item) for item in args.input_dir]
+        # List of input directories. Convert them to absolute paths.
+        directories = [Path(item).resolve() for item in args.input_dir]
 
         # Help with the progress report.
         n = 0
@@ -245,7 +245,7 @@ def main():
 
             colorprint(
                 Style.BRIGHT + Fore.LIGHTBLUE_EX,
-                f"- Archive: {subtarget_dir.relative_to(subtarget_dir.parent.parent)}:",
+                f"-> Archive - {subtarget_dir.relative_to(subtarget_dir.parent.parent)}:",
             )
 
             # Start of DLCIndex file.
@@ -256,6 +256,16 @@ def main():
             tree = GetIndexTree(dlc_index_file, "DlcIndex")
             root = tree.getroot()
             root_list = [root]
+
+            # Get revision status.
+            revision_status = bool(
+                int(
+                    root_list[0].attrib.get(
+                        "revision", "0" if args.norevision is True else "1"
+                    )
+                )
+            )
+            root_list[0].set("revision", "0" if args.norevision is True else "1")
 
             # Create InitialPackages tag.
             if root.find("InitialPackages") is not None:
@@ -299,10 +309,11 @@ def main():
 
                     # Only install subdirectory if it has changed or --priority has been set.
                     # Also, force install if --initial or --tutorial are set for the first time.
-                    # Also, force install if --nozip is set.
+                    # Also, force install if --nozip or revision_status is opposite of current revision option.
                     if (
                         force_install is False
                         and args.nozip is False
+                        and revision_status == (not args.norevision)
                         and subpath.exists() is True
                         and args.priority is None
                         and subdirectory.stat().st_mtime_ns < subpath.stat().st_mtime_ns
@@ -550,7 +561,7 @@ def main():
                     dlc_index_file,
                     Path(args.dlc_dir, "dlc"),
                     [
-                        subdirectory.name
+                        subdirectory.relative_to(directory.parent)
                         for subdirectory in directory.glob("*")
                         if subdirectory.is_dir() is True
                     ],
