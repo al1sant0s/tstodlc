@@ -9,10 +9,11 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from colorama import Fore, Style, init
 from tstodlc.tools.index import (
-    RemoveDeadPackages,
-    UpdatePackageEntry,
     GetIndexTree,
+    GetSubElementAttributes,
+    UpdatePackageEntry,
     UpdateServerIndex,
+    RemoveDeadPackages,
 )
 from tstodlc.tools.progress import report_progress, colorprint
 
@@ -281,6 +282,25 @@ def main():
                 root_list.append(ET.SubElement(root, "TutorialPackages"))
                 force_install = True
 
+            # Remove all local entries if their subfolders do not exist anymore!
+            for branch in root_list:
+                for pkg in branch.findall("Package"):
+                    filepath = Path(
+                        GetSubElementAttributes(pkg, "FileName")
+                        .get("val", None)
+                        .replace(":", os.sep)
+                    )
+                    filenamesplit = filepath.stem.rsplit("-r", maxsplit=1)
+                    filepath = Path(
+                        filepath.parent,
+                        filenamesplit[0]
+                        if filenamesplit[-1].isdigit()
+                        else filepath.stem,
+                    )
+                    if filepath.exists() is False:
+                        branch.remove(pkg)
+
+            # Start the packaging operation.
             if args.index_only is False:
                 for subdirectory in (
                     subdirectory
