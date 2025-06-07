@@ -297,7 +297,8 @@ def main():
                         if filenamesplit[-1].isdigit()
                         else filepath.stem,
                     )
-                    if filepath.exists() is False:
+                    # Remove package if subfolder does not exist or if it is empty.
+                    if filepath.exists() is False or len(list(filepath.iterdir())) == 0:
                         branch.remove(pkg)
 
             # Start the packaging operation.
