@@ -22,7 +22,7 @@ def SearchPackages(root, filename):
     filepath = Path(filename)
     filenamesplit = filepath.stem.rsplit("-r", maxsplit=1)
     filepath = Path(
-        filepath.parent,
+        filepath.parent.name,
         filenamesplit[0] if filenamesplit[-1].isdigit() else filepath.stem,
     )
     for package in root.findall("Package"):
@@ -34,7 +34,7 @@ def SearchPackages(root, filename):
 
         filenamesplit = package_path.stem.rsplit("-r", maxsplit=1)
         package_path = Path(
-            package_path.parent,
+            package_path.parent.name,
             filenamesplit[0] if filenamesplit[-1].isdigit() else package_path.stem,
         )
 
@@ -107,7 +107,7 @@ def UpdatePackageEntry(
 
     # Update packages details.
     for pkg in packages:
-        # Get root package of fall back to local package if root package does not exist.
+        # Get root package or fall back to local package if root package does not exist.
         root_package = root_packages[0] if len(root_packages) > 0 else pkg
 
         # Set package details.

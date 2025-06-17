@@ -292,7 +292,7 @@ def main():
                     )
                     filenamesplit = filepath.stem.rsplit("-r", maxsplit=1)
                     filepath = Path(
-                        filepath.parent,
+                        directory,
                         filenamesplit[0]
                         if filenamesplit[-1].isdigit()
                         else filepath.stem,
