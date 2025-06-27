@@ -233,7 +233,7 @@ tstodlc --priority 500 /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 tstodlc will pack each dlc component as a zip file. To prevent this behaviour, use --nozip argument. This might be useful for editing apk and ipa internal files.
 
 ```shell
-tstodlc --unzip /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+tstodlc --nozip /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 ```
 
 This will copy each dlc component folder over the destination.
