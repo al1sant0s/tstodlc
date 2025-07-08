@@ -63,7 +63,7 @@ def main():
 
     parser.add_argument(
         "--unzip",
-        help="Set unzip attribute for package entries. This will install dlc files at root of dlc folder.",
+        help="Set unzip attribute for package entries. This will install DLC files at root of DLC folder.",
         action="store_true",
     )
 
@@ -125,16 +125,24 @@ def main():
     parser.add_argument(
         "-n",
         "--nozip",
-        help="Do not zip the subfolders when installing the dlc. Useful for editing files from the apk/ipa.",
+        help="Do not zip the subfolders when installing the DLC. Useful for editing files from the apk/ipa.",
         action="store_true",
     )
+
+    parser.add_argument(
+        "-v",
+        "--view",
+        help="Inspect the DLC installed in the server DLC repository. View the properties of file 0 and list the archive files.",
+        action="store_true",
+    )
+
 
     parser.add_argument(
         "-c",
         "--clean",
         help="""
         Remove non existing packages from server DLCIndex-XXXX.xml.
-        When --clean is requested, normal operations (packing dlcs and such) will not happen.
+        When --clean is requested, normal operations (packing DLCs and such) will not happen.
 
         Suggestion of usage:
 
@@ -145,7 +153,7 @@ def main():
 
     parser.add_argument(
         "input_dir",
-        help="List of directories containing the dlc files.",
+        help="List of directories containing the DLC files.",
         nargs="+",
     )
 
@@ -180,19 +188,19 @@ def main():
             colorprint(
                 Style.BRIGHT + Fore.YELLOW,
                 """
-                \r-  Remember that you should specify your dlc directories.
-                \r-  That means that each dlc should be a directory.
+                \r-  Remember that you should specify your DLC directories.
+                \r-  That means that each DLC should be a directory.
 
-                \r-  Within each dlc (each directory) there should be subdirectories
-                \r-  corresponding to dlc components.
+                \r-  Within each DLC (each directory) there should be subdirectories
+                \r-  corresponding to DLC components.
 
                 \r-  Within these subdirectories there should be the files corresponding to
-                \r-  that dlc component.
+                \r-  that DLC component.
                 """,
             )
             colorprint(
                 Style.BRIGHT + Fore.CYAN,
-                "-> An example is given bellow with a dlc that is named 'SuperSecretUpdate'.\n",
+                "-> An example is given bellow with a DLC that is named 'SuperSecretUpdate'.\n",
             )
             colorprint(
                 Style.BRIGHT + Fore.WHITE,
@@ -211,7 +219,7 @@ def main():
             colorprint(Style.BRIGHT + Fore.WHITE, "\t\t - decorations-menu/", "\n\n")
             return
 
-        # Set destination of dlc files.
+        # Set destination of DLC files.
         target_dir = Path(args.dlc_dir)
         target_dir.mkdir(exist_ok=True)
 
@@ -236,7 +244,7 @@ def main():
                 )
                 continue
 
-            # Subdirectory in dlc.
+            # Subdirectory in DLC.
             subtarget_dir = (
                 Path(target_dir, directory.name)
                 if args.nozip is False
