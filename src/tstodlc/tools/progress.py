@@ -1,4 +1,13 @@
-from colorama import Style
+from colorama import Style, Fore
+
+def progress_str(n, total, message):
+    return (
+        message
+        + Style.BRIGHT
+        + Fore.CYAN
+        + f"- Progress ({n * 100 / total:.2f}%)"
+        + Style.RESET_ALL
+    )
 
 
 def report_progress(prefix_str, parsing_info):

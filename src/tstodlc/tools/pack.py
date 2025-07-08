@@ -6,7 +6,7 @@ import os
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZipFile, ZIP_DEFLATED, is_zipfile
 from colorama import Fore, Style, init
 from tstodlc.tools.index import (
     GetIndexTree,
@@ -15,17 +15,10 @@ from tstodlc.tools.index import (
     UpdateServerIndex,
     RemoveDeadPackages,
 )
-from tstodlc.tools.progress import report_progress, colorprint
+from tstodlc.tools.progress import progress_str, report_progress, colorprint
 
-
-def progress_str(n, total, message):
-    return (
-        message
-        + Style.BRIGHT
-        + Fore.CYAN
-        + f"- Progress ({n * 100 / total:.2f}%)"
-        + Style.RESET_ALL
-    )
+def read_bytestr(file_descriptor, n):
+    return file_descriptor.read(n).rstrip(b"\x00").decode("utf8")
 
 
 def write_str_to_file(file_descriptor, str_name):
@@ -36,6 +29,72 @@ def write_str_to_file(file_descriptor, str_name):
     # String.
     file_descriptor.write(str_name.encode())
     file_descriptor.write(b"\x00")
+
+
+def view_0_file(file_0, filename, show = False):
+
+    # Check if 0 file really exists and it is not a directory.
+    if file_0.exists() is True:
+        with open(file_0, "rb") as f:
+
+            # Check 0 file signature.
+            if f.read(6) != b"\x42\x47\x72\x6d\x03\x02":
+                return
+
+            # Read all info.
+            size_0 = int.from_bytes(f.read(4))
+
+            f.read(3)
+
+            original_dir = read_bytestr(f, int.from_bytes(f.read(1)))
+
+            zip_files = [{"name": "1", "crc32": "0"} for _ in range(int.from_bytes(f.read(2)))]
+
+            for zip_file in zip_files:
+                f.read(2)
+                zip_file["name"] = read_bytestr(f, int.from_bytes(f.read(1)))
+
+                f.read(1)
+                zip_file["crc32"] = str(int.from_bytes(f.read(4)))
+
+            number_files = int.from_bytes(f.read(2))
+
+            archived_files = [{"name": "nofile.empty", "extension": "empty", "size": 0, "priority": 0} for _ in range(max(1, number_files))]
+            if number_files > 0:
+                for file in archived_files:
+                    f.read(2)
+                    file["name"] = read_bytestr(f, int.from_bytes(f.read(1)))
+                    file["extension"] = read_bytestr(f, int.from_bytes(f.read(1)))
+                    f.read(int.from_bytes(f.read(1)))
+                    file["size"] = int.from_bytes(f.read(4))
+                    file["priority"] = int.from_bytes(f.read(2))
+                    f.read(2)
+
+            crc32 = int.from_bytes(f.read(4))
+
+            colorprint(Fore.LIGHTWHITE_EX, "=" * 78)
+            colorprint(
+                Fore.LIGHTWHITE_EX,
+                f"\n {filename} \n",
+            )
+
+            colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
+
+            colorprint(Fore.WHITE, f"* Original directory: {original_dir}")
+            colorprint(Fore.WHITE, f"* First priority: {archived_files[0]["priority"]}")
+            colorprint(Fore.WHITE, "* Archive list:")
+            colorprint(Fore.WHITE, f"- [0] --- CRC32: {crc32}")
+            for zip_file in zip_files:
+                colorprint(Fore.WHITE, f"- [{zip_file["name"]}] --- CRC32: {zip_file["crc32"]}")
+
+            # Print list of files if required.
+            if show is True:
+                colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
+                colorprint(Fore.WHITE, "SIZE" + " " * 25 + "PRIORITY" + " " * 21 + "NAME")
+                colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
+                for file in archived_files:
+                    colorprint(Fore.WHITE, f"{file["size"]:<9d}" + " " * 20 + f"{file['priority']:<9d}" + " " * 20  + f"{file['name']}")
+                colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
 
 
 def main():
@@ -132,7 +191,14 @@ def main():
     parser.add_argument(
         "-v",
         "--view",
-        help="Inspect the DLC installed in the server DLC repository. View the properties of file 0 and list the archive files.",
+        help="Inspect the DLC installed in the server DLC repository. View the properties of file 0 and list the archived files. It utilizes the arguments of input_dir.",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--show",
+        help="Like view but print a list of the files in the dlc. It utilizes the arguments of input_dir.",
         action="store_true",
     )
 
@@ -164,15 +230,86 @@ def main():
 
     args = parser.parse_args()
 
+
+    # List of input directories. Convert them to absolute paths.
+    directories = [Path(item).resolve() for item in args.input_dir]
+
+    # Inspecting DLC files.
+    if args.view is True or args.show is True:
+
+        print("\n")
+        status = False
+
+        # Search for subdirectories and zip files.
+        for directory in directories:
+            # Check if it is really a directory.
+            if directory.is_dir() is True:
+                file_0 = Path(directory, "0")
+                if file_0.exists() is True:
+                    view_0_file(file_0, directory.relative_to(directory.parent.parent), args.show)
+                    status = True
+
+                # Inspect all subdirectories and files if there is any.
+                for item in directory.iterdir():
+
+                    # Normal subdirectories. Check 0 file presence and copy it to tempdir.
+                    if item.is_dir():
+                        file_0 = Path(item, "0")
+                        if file_0.exists() is True:
+                            view_0_file(file_0, item.relative_to(directory.parent), args.show)
+                            status = True
+
+                    # Zip files. Extract 0 file to tempdir.
+                    elif item.suffix == ".zip" and is_zipfile(item) is True:
+                        with tempfile.TemporaryDirectory() as tempdir:
+                            file_0 = Path(tempdir, "0")
+                            with ZipFile(item) as ZObject:
+                                if "0" in ZObject.namelist():
+                                    ZObject.extract("0", file_0.parent)
+                                    view_0_file(file_0, item.relative_to(directory.parent), args.show)
+                                    status = True
+
+
+            # Check if it instead is a zip file.
+            elif directory.suffix == ".zip" and is_zipfile(directory) is True:
+                with tempfile.TemporaryDirectory() as tempdir:
+                    file_0 = Path(tempdir, "0")
+                    with ZipFile(directory) as ZObject:
+                        if "0" in ZObject.namelist():
+                            ZObject.extract("0", file_0.parent)
+                            view_0_file(file_0, directory.relative_to(directory.parent.parent), args.show)
+                            status = True
+
+
+
+        if status is True:
+            colorprint(Fore.LIGHTWHITE_EX, "=" * 78)
+        else:
+            colorprint(
+                Style.BRIGHT + Fore.RED,
+                "  Warning! No DLC files for inspecting found under the arguments you have provided.",
+            )
+        print("\n")
+
+    # Cleaning dead packages.
+    elif args.clean is True:
+        colorprint(
+            Style.BRIGHT + Fore.MAGENTA,
+            "\n\n--- CLEANING MISSING PACKAGES FROM SERVER DLCIndex ---\n\n",
+        )
+        RemoveDeadPackages(
+            Path(args.dlc_dir), ["DlcIndex", "InitialPackages", "TutorialPackages"]
+        )
+
+        colorprint(Style.BRIGHT + Fore.MAGENTA, "\n--- JOB COMPLETED!!! ---\n")
+
+
     # Normal operation.
-    if args.clean is False:
+    else:
         colorprint(
             Style.BRIGHT + Fore.MAGENTA,
             "\n\n--- PACKING FILES INTO 0 and 1 FILES ---\n",
         )
-
-        # List of input directories. Convert them to absolute paths.
-        directories = [Path(item).resolve() for item in args.input_dir]
 
         # Help with the progress report.
         n = 0
@@ -420,9 +557,9 @@ def main():
                         # Zip all files into file_1.
                         with ZipFile(
                             file_1, "w", ZIP_DEFLATED, strict_timestamps=False
-                        ) as zip:
+                        ) as ZObject:
                             for file in files:
-                                zip.write(file, arcname=file.relative_to(subdirectory))
+                                ZObject.write(file, arcname=file.relative_to(subdirectory))
 
                         with open(file_0, "wb") as f0:
                             # Write 0 file signature.
@@ -532,9 +669,9 @@ def main():
                             zip_file = newsubpath
                             with ZipFile(
                                 zip_file, "w", ZIP_DEFLATED, strict_timestamps=False
-                            ) as zip:
+                            ) as ZObject:
                                 for file in files:
-                                    zip.write(file, arcname=file.name)
+                                    ZObject.write(file, arcname=file.name)
 
                             # Complete file 0 crc32.
                             with open(file_0, "rb") as f0:
@@ -601,14 +738,4 @@ def main():
                         Style.BRIGHT + Fore.GREEN, f"-> Updated: {server_index}!"
                     )
 
-    # Cleaning dead packages.
-    else:
-        colorprint(
-            Style.BRIGHT + Fore.MAGENTA,
-            "\n\n--- CLEANING MISSING PACKAGES FROM SERVER DLCIndex ---\n\n",
-        )
-        RemoveDeadPackages(
-            Path(args.dlc_dir), ["DlcIndex", "InitialPackages", "TutorialPackages"]
-        )
-
-    colorprint(Style.BRIGHT + Fore.MAGENTA, "\n--- JOB COMPLETED!!! ---\n")
+        colorprint(Style.BRIGHT + Fore.MAGENTA, "\n--- JOB COMPLETED!!! ---\n")
