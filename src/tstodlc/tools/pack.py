@@ -70,15 +70,20 @@ def view_0_file(file_0, filename, show = False):
                     file["priority"] = int.from_bytes(f.read(2))
                     f.read(2)
 
+
+            # To help with formating.
+            min_padding = max((len(file['name']) for file in archived_files))
+            delimiters = max(116, 81 + min_padding)
+
             crc32 = int.from_bytes(f.read(4))
 
-            colorprint(Fore.LIGHTWHITE_EX, "=" * 78)
+            colorprint(Fore.LIGHTWHITE_EX, "=" * delimiters)
             colorprint(
                 Fore.LIGHTWHITE_EX,
                 f"\n {filename} \n",
             )
 
-            colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
+            colorprint(Fore.LIGHTWHITE_EX, "-" * delimiters)
 
             colorprint(Fore.WHITE, f"* Original directory: {original_dir}")
             colorprint(Fore.WHITE, f"* First priority: {archived_files[0]["priority"]}")
@@ -89,12 +94,12 @@ def view_0_file(file_0, filename, show = False):
 
             # Print list of files if required.
             if show is True:
-                colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
-                colorprint(Fore.WHITE, "SIZE" + " " * 25 + "PRIORITY" + " " * 21 + "NAME")
-                colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
+                colorprint(Fore.LIGHTWHITE_EX, "-" * delimiters)
+                colorprint(Fore.WHITE, f"{'PRIORITY':<9s}" + " " * 10 + f"{'NAME':<{min_padding}s}" + " " * 10 + f"{'DIRECTORY':<32s}")
+                colorprint(Fore.LIGHTWHITE_EX, "-" * delimiters)
                 for file in archived_files:
-                    colorprint(Fore.WHITE, f"{file["size"]:<9d}" + " " * 20 + f"{file['priority']:<9d}" + " " * 20  + f"{file['name']}")
-                colorprint(Fore.LIGHTWHITE_EX, "-" * 78)
+                    colorprint(Fore.WHITE, f"{file['priority']:<9d}" + " " * 10  + f"{file['name']:<{min_padding}s}" + " " * 10 + f"{str(filename.name):<32s}")
+                colorprint(Fore.LIGHTWHITE_EX, "-" * delimiters)
 
 
 def main():
@@ -283,7 +288,8 @@ def main():
 
 
         if status is True:
-            colorprint(Fore.LIGHTWHITE_EX, "=" * 78)
+            if args.show is False:
+                colorprint(Fore.LIGHTWHITE_EX, "=" * 116)
         else:
             colorprint(
                 Style.BRIGHT + Fore.RED,
