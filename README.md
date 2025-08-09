@@ -24,8 +24,8 @@ download them once you log into your server.
 * [Priority](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#priority)
 * [No zip](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#no-zip)
 * [Installing multiple DLCs at once](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#installing-multiple-dlcs-at-once)
+* [Inspecting DLCs](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#inspecting-dlcs)
 * [Uninstalling DLCs](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#uninstalling-dlcs)
-* [Inspecting DLC files](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#inspecting-dlcs)
 * [Revision system](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#revision-system)
 * [Short options](https://github.com/al1sant0s/tstodlc?tab=readme-ov-file#short-options)
 
@@ -255,6 +255,37 @@ The first N directories are the DLCs you want to install and the last one as usu
 After the command is executed, under each /path/to/dlcXX/ an index file will be created so you can edit their correspondent packages entries.
 All previous options discussed earlier work here as well.
 
+## Inspecting DLCs
+
+Sometimes you may need to check what contents a specific DLC installed in your server DLC repository carries. Through the usage of
+'--view' and '--show' you can ask tstodlc to inspect any specific DLC files for you. To do that pass as input a list of directories where those DLCs
+are and any output directory as the last directory (you can use the dot shortcut for that). The --view argument will make tstodlc print the contents
+of the 0 file of that particular DLC, the --show argument will do the same and print an additional list of files which that DLC is bundled with.
+In the example bellow we are inspecting the contents of the _SuperSecretUpdate_ DLC that we have installed previously in our server DLC repository.
+
+```shell
+tstodlc --view /path/to/server/dlc/SuperSecretUpdate/ .
+```
+
+To get an additional list with the files in that DLC:
+
+```shell
+tstodlc --show /path/to/server/dlc/SuperSecretUpdate/ .
+```
+
+These two arguments also support multiple directories at once. For example, if we want to inspect three DLCs in the server DLC repository:
+
+```shell
+tstodlc --show /path/to/server/dlc/dlc01/ /path/to/server/dlc/dlc02/ /path/to/server/dlc/dlc03/ .
+```
+
+You can also inspect specific components of a specific DLC, just give as one of the input directories the path to the zip file. In the example bellow, we
+illustrate the command one would use to inspect the component *buildings-menu/* from the DLC _SuperSecretUpdate_.
+
+```shell
+tstodlc --show /path/to/server/SuperSecretUpdate/buildings-menu-r123456789.zip .
+```
+
 ## Uninstalling DLCs
 
 Uninstalling DLCs from the server DLC repository is as easy as installing them and it's done using the --clean argument.
@@ -266,39 +297,6 @@ tstodlc --clean . /path/to/server/dlc/
 ```
 
 ![Cleaning.](images/img06.png)
-
-## Inspecting DLCs
-
-Sometimes you may need to check what contents a specific DLC installed in your server DLC repository carries. Through the usage of
-'--view' and '--show' you can ask tstodlc to inspect any specific DLC files for you. To do that pass as input a list of directories where those DLCs
-are and any output directory as the last directory (you can use the dot shortcut for that). The --view argument will make tstodlc print the contents
-of the 0 file of that particular DLC, the --show argument will do the same and print an additional list of files which that DLC is bundled with.
-In the example bellow we are inspecting the contents of the _SuperSecretUpdate_ DLC that we have installed previously in our server DLC repository.
-
-```shell
-tstodlc --view /path/to/server/SuperSecretUpdate/ .
-```
-
-To get an additional list with the files in that DLC:
-
-```shell
-tstodlc --show /path/to/server/SuperSecretUpdate/ .
-```
-
-
-These two arguments also support multiple directories at once. For example, if we want to inspect three DLCs in the server DLC repository:
-
-```shell
-tstodlc --show /path/to/server/DLC01/ /path/to/server/DLC02/ /path/to/server/DLC03/ .
-```
-
-You can also inspect specific components of a specific DLC, just give as one of the input directories the path to the zip file. In the example bellow, we
-illustrate the command one would use to inspect the component *buildings-menu/* from the DLC _SuperSecretUpdate_.
-
-```shell
-tstodlc --show /path/to/server/SuperSecretUpdate/buildings-menu-r123456789.zip .
-```
-
 
 ## Revision system
 
@@ -332,6 +330,18 @@ tstodlc -i /path/to/SuperSecretUpdate/ /path/to/server/dlc/
 
 ```shell
 tstodlc -n /path/to/SuperSecretUpdate/ /path/to/server/dlc/
+```
+
+* --view [-v]
+
+```shell
+tstodlc -v /path/to/server/dlc/SuperSecretUpdate/ .
+```
+
+* --show [-v]
+
+```shell
+tstodlc -s /path/to/server/dlc/SuperSecretUpdate/ .
 ```
 
 * --clean [-c]
