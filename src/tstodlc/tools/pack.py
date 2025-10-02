@@ -86,11 +86,11 @@ def view_0_file(file_0, filename, show = False):
             colorprint(Fore.LIGHTWHITE_EX, "-" * delimiters)
 
             colorprint(Fore.WHITE, f"* Original directory: {original_dir}")
-            colorprint(Fore.WHITE, f"* First priority: {archived_files[0]["priority"]}")
+            colorprint(Fore.WHITE, f"* First priority: {archived_files[0]['priority']}")
             colorprint(Fore.WHITE, "* Archive list:")
             colorprint(Fore.WHITE, f"- [0] --- CRC32: {crc32}")
             for zip_file in zip_files:
-                colorprint(Fore.WHITE, f"- [{zip_file["name"]}] --- CRC32: {zip_file["crc32"]}")
+                colorprint(Fore.WHITE, f"- [{zip_file['name']}] --- CRC32: {zip_file['crc32']}")
 
             # Print list of files if required.
             if show is True:
@@ -323,7 +323,7 @@ def main():
             (len(list(Path(directory).glob("*/"))) for directory in args.input_dir)
         )
 
-        if total == 0:
+        if args.index_only is False and total == 0:
             colorprint(
                 Style.BRIGHT + Fore.RED,
                 "-> Warning! No subdirectories found under the arguments you have provided.",
