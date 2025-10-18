@@ -459,6 +459,7 @@ def main():
                     for subdirectory in directory.glob("*")
                     if subdirectory.is_dir() is True
                 ):
+
                     # Get first subpath it can find and filename.
                     subpath = list(
                         subtarget_dir.glob(
@@ -478,6 +479,47 @@ def main():
                         )
 
                     filename = str(subpath.relative_to(subpath.parent.parent))
+
+
+                    # Predefine tier and language options for the local DLCIndex-XXXX.xml file.
+                    tiers = {
+                        "100": "100",
+                        "50": "50",
+                        "25": "25",
+                        "ipad3": "ipad3",
+                        "retina": "retina",
+                        "ipad": "ipad",
+                        "iphone": "iphone",
+                        "large": "100",
+                        "medium": "50",
+                        "small": "25",
+                        "wav": "wav",
+                        "mp3": "mp3",
+                        "caf": "caf"
+                    }
+
+                    languages = {
+                        "da": "da",
+                        "de": "de",
+                        "en": "en",
+                        "es": "es",
+                        "fr": "fr",
+                        "it": "it",
+                        "ko": "ko",
+                        "nl": "nl",
+                        "no": "no",
+                        "pt": "pt",
+                        "ru": "ru",
+                        "sv": "sv",
+                        "tc": "tc",
+                        "th": "th",
+                        "tr": "tr",
+                        "zh": "zh"
+                    }
+
+                    tier = tiers.get(subdirectory.name.rsplit("-", maxsplit = 1)[-1], args.tier)
+                    language = languages.get(subdirectory.name.rsplit("-", maxsplit = 1)[-1], args.language)
+
 
                     # Only install subdirectory if it has changed or --priority has been set.
                     # Also, force install if --initial or --tutorial are set for the first time.
@@ -512,13 +554,13 @@ def main():
                                     args.platform,
                                     args.unzip,
                                     args.version,
-                                    args.tier,
+                                    tier,
                                     None,
                                     None,
                                     None,
                                     filename,
                                     filename,
-                                    args.language,
+                                    language,
                                 )
 
                         continue
@@ -691,13 +733,13 @@ def main():
                                     args.platform,
                                     args.unzip,
                                     args.version,
-                                    args.tier,
+                                    tier,
                                     str(zip_file.stat().st_size // 1000),
                                     str(file_1.stat().st_size // 1000),
                                     str(file_0_crc32),
                                     filename,
                                     newfilename,
-                                    args.language,
+                                    language,
                                 )
 
                             # Added file.
