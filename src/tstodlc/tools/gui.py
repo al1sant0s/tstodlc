@@ -2,9 +2,11 @@ import contextlib
 import io
 import queue
 import re
+import tempfile
 import threading
 import tkinter as tk
 from pathlib import Path
+from zipfile import ZipFile, is_zipfile
 from tkinter import filedialog, messagebox, ttk
 
 from tstodlc.tools import pack
@@ -41,6 +43,7 @@ class TstoDlcGui(tk.Tk):
 
         self.output_queue = queue.Queue()
         self.worker = None
+        self.input_entries = []
 
         self.operation = tk.StringVar(value="install")
         self.destination = tk.StringVar()
@@ -56,6 +59,7 @@ class TstoDlcGui(tk.Tk):
         self.nozip = tk.BooleanVar(value=False)
 
         self._build_ui()
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._poll_output()
         self._refresh_command()
 
@@ -204,7 +208,7 @@ class TstoDlcGui(tk.Tk):
     def _add_folders(self):
         folder = filedialog.askdirectory(title="Choose DLC directory")
         if folder:
-            self.inputs.insert(tk.END, folder)
+            self._add_input_entry(folder, label=folder)
             self._refresh_command()
 
     def _add_files(self):
@@ -213,8 +217,28 @@ class TstoDlcGui(tk.Tk):
             filetypes=(("Zip files", "*.zip"), ("All files", "*.*")),
         )
         for file in files:
-            self.inputs.insert(tk.END, file)
+            if not is_zipfile(file):
+                messagebox.showerror("Invalid zip", f"Not a valid zip file:\n{file}")
+                continue
+
+            tempdir = tempfile.TemporaryDirectory(prefix="tstodlc-")
+            with ZipFile(file) as archive:
+                archive.extractall(tempdir.name)
+
+            label = f"{Path(file).name} -> {tempdir.name}"
+            self._add_input_entry(str(Path(tempdir.name, Path(file).stem)), label=label, tempdir=tempdir)
         self._refresh_command()
+
+    def _add_input_entry(self, path, label=None, tempdir=None):
+        self.input_entries.append({"path": path, "label": label or path, "tempdir": tempdir})
+        self._rebuild_inputs()
+
+    def _rebuild_inputs(self, selected_index=None):
+        self.inputs.delete(0, tk.END)
+        for entry in self.input_entries:
+            self.inputs.insert(tk.END, entry["label"])
+        if selected_index is not None and 0 <= selected_index < self.inputs.size():
+            self.inputs.selection_set(selected_index)
 
     def _choose_destination(self):
         folder = filedialog.askdirectory(title="Choose destination directory")
@@ -228,7 +252,9 @@ class TstoDlcGui(tk.Tk):
     def _remove_selected(self):
         index = self._selected_index()
         if index is not None:
-            self.inputs.delete(index)
+            entry = self.input_entries.pop(index)
+            self._cleanup_entry(entry)
+            self._rebuild_inputs()
             self._refresh_command()
 
     def _move_selected(self, direction):
@@ -236,20 +262,43 @@ class TstoDlcGui(tk.Tk):
         if index is None:
             return
         new_index = index + direction
-        if new_index < 0 or new_index >= self.inputs.size():
+        if new_index < 0 or new_index >= len(self.input_entries):
             return
-        value = self.inputs.get(index)
-        self.inputs.delete(index)
-        self.inputs.insert(new_index, value)
-        self.inputs.selection_set(new_index)
+        self.input_entries[index], self.input_entries[new_index] = (
+            self.input_entries[new_index],
+            self.input_entries[index],
+        )
+        self._rebuild_inputs(selected_index=new_index)
         self._refresh_command()
 
     def _clear_inputs(self):
+        for entry in self.input_entries:
+            self._cleanup_entry(entry)
+        self.input_entries.clear()
         self.inputs.delete(0, tk.END)
         self._refresh_command()
 
     def _get_inputs(self):
-        return list(self.inputs.get(0, tk.END))
+        return [entry["path"] for entry in self.input_entries]
+
+    def _cleanup_entry(self, entry):
+        tempdir = entry.get("tempdir")
+        if tempdir is not None:
+            tempdir.cleanup()
+
+    def _cleanup_inputs(self):
+        while self.input_entries:
+            self._cleanup_entry(self.input_entries.pop())
+
+    def _on_close(self):
+        if self.worker is not None and self.worker.is_alive():
+            if not messagebox.askyesno(
+                "Operation running",
+                "An operation is still running. Close anyway?",
+            ):
+                return
+        self._cleanup_inputs()
+        self.destroy()
 
     def _build_args(self):
         args = []

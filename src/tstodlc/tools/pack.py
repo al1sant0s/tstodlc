@@ -102,7 +102,7 @@ def view_0_file(file_0, filename, show = False):
                 colorprint(Fore.LIGHTWHITE_EX, "-" * delimiters)
 
 
-def main():
+def main(argv=None):
     # Init colorama.
     init()
 
@@ -233,7 +233,7 @@ def main():
         help="Directory where results will be stored.",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
 
     # List of input directories. Convert them to absolute paths.
