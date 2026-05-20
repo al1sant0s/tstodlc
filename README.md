@@ -60,6 +60,14 @@ To get the full help execute the following command:
 tstodlc --help
 ```
 
+To use the graphical interface instead, run:
+
+```shell
+tstodlc-gui
+```
+
+The GUI keeps the same workflow as the command-line tool: add one or more DLC input directories, choose the server DLC repository as the destination, select any options you need, and run the generated command.
+
 The tool will receive a list of directories (those being the DLCs) and will install them on the last directory you provide (that should be
 the server DLC repository).
 

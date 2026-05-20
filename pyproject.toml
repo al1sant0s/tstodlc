@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tstodlc"
-version = "0.0.5.9"
+version = "0.0.6.0"
 authors = [
   { name="al1sant0s", email="cnctalissonsantos@gmail.com" },
 ]
@@ -20,6 +20,7 @@ dependencies = ["colorama"]
 
 [project.scripts]
 tstodlc = "tstodlc.tools.pack:main"
+tstodlc-gui = "tstodlc.tools.gui:main"
 
 [project.urls]
 Homepage = "https://github.com/al1sant0s/tstodlc"
